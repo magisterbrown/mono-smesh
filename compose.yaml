@@ -1,0 +1,5 @@
+services:
+  proxy:
+    build: .
+    ports:
+      - "6363:80"
