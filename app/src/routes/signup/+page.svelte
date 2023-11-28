@@ -7,7 +7,6 @@
                     <div id="cir2"></div>
                 </div>
             </div>
-            <span>{ count }</span>
             <label for="email">Email:</label>
             <input type="email" class="textf" id="email">
             <label for="password">Password:</label>
