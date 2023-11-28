@@ -1,0 +1,23 @@
+<body>
+    <div class="vert">
+        <form class="verification">
+            <div class="logo">
+                <div class="epoch">
+                    <div id="cir1"></div>
+                    <div id="cir2"></div>
+                </div>
+            </div>
+            <span>{ count }</span>
+            <label for="email">Email:</label>
+            <input type="email" class="textf" id="email">
+            <label for="password">Password:</label>
+            <input type="password" class="textf" id="password">
+            <label for="confirm">Confirm password:</label>
+            <input type="password" class="textf" id="confirm">
+            <div class="button">
+                <input type="submit" class="button" value="Sign Up">
+            </div>
+        </form>
+    </div>
+
+</body>
