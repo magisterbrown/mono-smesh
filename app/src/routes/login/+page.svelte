@@ -1,4 +1,5 @@
 <body>
+    <a class="switch" href="/signup">signup</a>
     <div class="vert">
         <form class="verification">
             <div class="logo">
@@ -12,7 +13,7 @@
             <label for="password">Password:</label>
             <input type="password" class="textf" id="password">
             <div class="button">
-                <input type="submit" class="button" value="Sign Up">
+                <input type="submit" class="button" value="Login">
             </div>
         </form>
     </div>

@@ -1,4 +1,5 @@
 <body>
+    <a class="switch" href="/login">login</a>
     <div class="vert">
         <form class="verification">
             <div class="logo">

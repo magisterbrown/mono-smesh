@@ -1,5 +1,4 @@
 html {
-
     font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -9,6 +8,12 @@ html {
     transform: translateY(-50%);
     right:0;
     left:0;
+}
+
+.switch {
+    position: absolute;
+    top 1rem;
+    right: 1rem;
 }
 
 .epoch {
