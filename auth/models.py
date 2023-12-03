@@ -10,7 +10,7 @@ class User(Base):
     id = mapped_column(Integer, primary_key=True)
     user_name = mapped_column(String, unique=True)
     password = mapped_column(String)
-    tokens = relationship("Token", back_populates="user_id")
+    tokens = relationship("Token", back_populates="user")
 
 class Token(Base):
     __tablename__ = "session_token"

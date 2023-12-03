@@ -1,13 +1,22 @@
 from typing import Annotated
 
-from fastapi import FastAPI, Header, HTTPException, Response
+from fastapi import FastAPI, Header, HTTPException, Response, Body
 from sqlalchemy import create_engine, text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
 from models import Base, User, Token
+
+from pydantic import BaseModel
+from sqlalchemy import select
+import uuid
+import hashlib
+
+class Credentials(BaseModel):
+    username: str
+    password: str
 
 app = FastAPI()
 subdomain = "/auth"
@@ -18,15 +27,19 @@ Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base.metadata.create_all(engine)
 
+def hasher(inp: str) -> str:
+    return hashlib.sha512(inp.encode()).hexdigest()
+
 @app.post(f"{subdomain}/signup")
-def signup(username: str, password: str):
+def signup(cred: Credentials):
     db = Session()
-    db_user = User(user_name=username, password=str(hash(password)))
+    db_user = User(user_name=cred.username, password=hasher(cred.password))
     try:
         db.add(db_user)
 
         secret = uuid.uuid4().hex
-        token = Token(user=db_user, token=hash(secret))
+        token = Token(user=db_user, token=hasher(secret))
+        db.add(token)
         db.commit()
         return {"Authorization": secret}
     except IntegrityError:
@@ -34,12 +47,28 @@ def signup(username: str, password: str):
  
 
 @app.post(f"{subdomain}/login")
-def login():
-    return {"Hello": "World"}
+def login(cred: Credentials):
+    db = Session()
+    try:
+        user = db.execute(select(User).where(User.user_name==cred.username, User.password==hasher(cred.password))).one()[0]
+    except NoResultFound:
+        raise HTTPException(status_code=401, detail="Wrong user name or password")
+
+    secret = uuid.uuid4().hex
+    token = Token(user=user, token=hasher(secret))
+    db.add(token)
+    db.commit()
+
+    return {"Authorization": secret}
 
 @app.api_route(subdomain, methods=["GET"])
-def authentify(authorization: Annotated[list[str] | None, Header()] = None):
+def authentify(authorization: Annotated[str , Header()]):
+    db = Session()
     if authorization is None:
         raise HTTPException(status_code=401)
-    return Response(status_code=200, headers={"User-Name": "real DT"})
+    try:
+        token = db.execute(select(Token).where(Token.token==hasher(authorization))).one()[0]
+    except NoResultFound:
+        raise HTTPException(status_code=401)
+    return Response(status_code=200, headers={"User-Name": token.user.user_name})
 
