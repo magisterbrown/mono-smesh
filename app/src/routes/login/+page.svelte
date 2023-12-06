@@ -1,3 +1,6 @@
+<script>
+    import '../auth.css';
+</script>
 <body>
     <a class="switch" href="/signup">signup</a>
     <div class="vert">
