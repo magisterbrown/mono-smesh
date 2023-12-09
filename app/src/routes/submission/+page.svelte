@@ -15,7 +15,7 @@ let agents = [
     <div class="columns">
         <div class="info">
         List of all your active agents. Green ones are active on the leader board.
-        Download <a href="">example agent</a> tar file, unpack it and try to upload your own python agent.
+        Download example agent tar file, unpack it and try to upload your own python agent.
         </div>
         <form class="filed">
              <input type="file" name="file" id="file" class="inputfile" />
@@ -59,9 +59,6 @@ let agents = [
     color: #333;
     padding: 0.5rem 0 0.5rem 0;
     border-bottom: 1px solid #ccc;
-}
-.button{
-    height: 2em;
 }
 .inputfile{
     border: 1px solid #ccc;

@@ -7,8 +7,8 @@
 <div class="header">
     <div class="lists">
         <div class="buttons">
-            <span class:selected={sel=="leader"} on:click={leader}>Leaderboard</span>
-            <span class:selected={sel=="subm"} on:click={subm}>Submission</span>
+            <button class:selected={sel=="leader"} on:click={leader}>Leaderboard</button>
+            <button class:selected={sel=="subm"} on:click={subm}>Submission</button>
         </div>
     </div>
 </div>
@@ -34,6 +34,10 @@
   line-height: 4rem;
   padding: 0 0.8rem 0 0.8rem;
   cursor: pointer;
+  color: inherit;
+  font-size: 1rem;
+  background-color: #fff;
+  border: 0;
 }
 
 .selected {
