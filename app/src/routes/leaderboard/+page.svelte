@@ -1,5 +1,7 @@
 <script>
 import Header from '../Header.svelte';
+import Fa from 'svelte-fa/src/fa.svelte'
+import { faBook} from '@fortawesome/free-solid-svg-icons'
 let teams = [
     { id: 1, name: "BigTeam", score: 1200.3, agents: 5},
     { id: 2, name: "BigTeamU", score: 1101.1, agents: 15},
@@ -21,7 +23,8 @@ let teams = [
                     <span class="rank">{i+1}</span>
                     <span class="team">{team.name}</span>
                     <span class="score">{team.score}</span>
-                    <span class="agents">{team.agents}</span>
+                    <span class="agents">{team.agents}  <Fa icon={faBook} style="cursor:pointer; font-size: 1.0rem"/>
+</span>
                 </div>
             {/each}
             
