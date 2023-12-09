@@ -11,6 +11,7 @@ from models import Base, User, Token
 
 from pydantic import BaseModel
 from sqlalchemy import select
+from configs.conf import db_url
 import uuid
 import hashlib
 
@@ -21,7 +22,6 @@ class Credentials(BaseModel):
 app = FastAPI()
 subdomain = "/auth"
 
-db_url = 'postgresql://magisterbrownie:post@localhost/auth_ranking'
 engine = create_engine(db_url)
 Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

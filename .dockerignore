@@ -1,3 +1,5 @@
+# Fron end ignores
+
 app/..DS_Store
 app/node_modules
 app/build
@@ -8,3 +10,8 @@ app/.env.*
 app/!.env.example
 app/vite.config.js.timestamp-*
 app/vite.config.ts.timestamp-*
+
+#Auth ignores
+
+auth/env/
+**/__pycache__/

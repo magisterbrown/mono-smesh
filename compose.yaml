@@ -1,5 +1,24 @@
 services:
-  proxy:
-    build: .
-    ports:
-      - "6363:80"
+  #proxy:
+  #  build: .
+  #  ports:
+  #    - "8080:8000"
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=auth_ranking
+      - POSTGRES_USER=magisterbrownie
+      - POSTGRES_PASSWORD=post
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username=magisterbrownie --dbname=auth_ranking"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+
+  auth:
+    build: auth/
+    depends_on:
+      db:
+        condition: service_healthy
+
+
