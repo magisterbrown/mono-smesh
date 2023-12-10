@@ -1,8 +1,11 @@
 services:
-  #proxy:
-  #  build: .
-  #  ports:
-  #    - "8080:8000"
+  proxy:
+      build: .
+      ports:
+        - "8080:8000"
+      depends_on:
+        - auth
+  
   db:
     image: postgres:latest
     environment:
@@ -21,4 +24,4 @@ services:
       db:
         condition: service_healthy
 
-
+  
