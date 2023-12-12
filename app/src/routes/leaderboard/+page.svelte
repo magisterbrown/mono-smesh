@@ -2,6 +2,12 @@
 import Header from '../Header.svelte';
 import Fa from 'svelte-fa/src/fa.svelte'
 import { faBook} from '@fortawesome/free-solid-svg-icons'
+import { authenticatedFetch } from '$lib/request.js'
+import { onMount } from "svelte";
+
+onMount( () => {
+    authenticatedFetch("http://localhost:5173/sdds/as")
+});
 let teams = [
     { id: 1, name: "BigTeam", score: 1200.3, agents: 5},
     { id: 2, name: "BigTeamU", score: 1101.1, agents: 15},

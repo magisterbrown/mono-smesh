@@ -15,11 +15,22 @@ from configs.conf import db_url
 import uuid
 import hashlib
 
+
+from fastapi.middleware.cors import CORSMiddleware
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=['*'],
+    allow_methods=["GET", "POST"],
+    allow_headers=['*']
+)
+
 class Credentials(BaseModel):
     username: str
     password: str
 
-app = FastAPI()
 subdomain = "/auth"
 
 engine = create_engine(db_url)
