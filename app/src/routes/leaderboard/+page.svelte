@@ -6,7 +6,6 @@ import { authenticatedFetch } from '$lib/request.js'
 import { onMount } from "svelte";
 
 onMount( () => {
-    authenticatedFetch("http://localhost:5173/sdds/as")
 });
 let teams = [
     { id: 1, name: "BigTeam", score: 1200.3, agents: 5},

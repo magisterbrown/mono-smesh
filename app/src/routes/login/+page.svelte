@@ -1,24 +1,28 @@
 <script>
     import '../auth.css';
+    import { getToken } from '$lib/request.js';
+    let username = '';
+    let password = '';
+    function handleLogin() {
+        getToken("/login", username, password);
+    }
 </script>
-<body>
-    <a class="switch" href="/signup">signup</a>
-    <div class="vert">
-        <form class="verification">
-            <div class="logo">
-                <div class="epoch">
-                    <div id="cir1"></div>
-                    <div id="cir2"></div>
-                </div>
+<a class="switch" href="/signup">signup</a>
+<div class="vert">
+    <form class="verification" on:submit|preventDefault={handleLogin}>
+        <div class="logo">
+            <div class="epoch">
+                <div id="cir1"></div>
+                <div id="cir2"></div>
             </div>
-            <label for="email">Email:</label>
-            <input type="email" class="textf" id="email">
-            <label for="password">Password:</label>
-            <input type="password" class="textf" id="password">
-            <div class="button">
-                <input type="submit" class="button" value="Login">
-            </div>
-        </form>
-    </div>
+        </div>
+        <label for="username">User Name:</label>
+        <input type="username" class="textf" id="username" bind:value={username}>
+        <label for="password">Password:</label>
+        <input type="password" class="textf" id="password" bind:value={password}>
+        <div class="button">
+            <input type="submit" class="button" value="Login">
+        </div>
+    </form>
+</div>
 
-</body>
