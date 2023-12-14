@@ -1,4 +1,4 @@
-const backend_url = "http://localhost:8000"
+const backend_url = "http://localhost:8080"
 
 export async function authenticatedFetch(endpoint, options = {}) {
     let resp = await fetch(backend_url+endpoint, {... options});
