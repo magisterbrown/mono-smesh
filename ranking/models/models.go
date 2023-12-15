@@ -97,13 +97,12 @@ func GetAgentsN() (int, error) {
 type Player struct {
     Id int
     Name string
-    Password string
 }
 
 func GetPlayer(token string) (Player, error) {
     // TODO: defence from sql injections.
     var user Player
-    err := DB.QueryRow("select * from players where id in (select user_id from sessions where token='"+token+"')").Scan(&user.Id, &user.Name, &user.Password);
+    err := DB.QueryRow("select * from players where id in (select user_id from sessions where token='"+token+"')").Scan(&user.Id, &user.Name);
     return user, err
 }
 
@@ -113,7 +112,7 @@ func GetLeaderboard() []Player {
     var res []Player
     for rows.Next() {
         var player Player
-        rows.Scan(&player.Id, &player.Name, &player.Password);
+        rows.Scan(&player.Id, &player.Name);
         res = append(res, player);
     }
     return res

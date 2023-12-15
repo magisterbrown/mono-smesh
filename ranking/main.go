@@ -9,7 +9,8 @@ import (
     "encoding/json"
     "ranking/models"
     "ranking/src"
-    _ "github.com/mattn/go-sqlite3" 
+    "ranking/config"
+    _ "github.com/lib/pq" 
     "github.com/docker/docker/api/types"
     "github.com/docker/docker/client"
     "github.com/dustinkirkland/golang-petname"
@@ -86,19 +87,20 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
 
 func main() {
     var err error
-    models.DB, err = sql.Open("sqlite3", "/tmp/rankings.db") 
+    models.DB, err = sql.Open("postgres", config.DBurl) 
     if err != nil {
         log.Fatal(err)
     }
 
+    //ct, _ := models.GetAgentsN()
+
+
     err = compete.InitGame()
 
     if err != nil {
-	    fmt.Println("Error:", err)
-	    return
-	}
+        panic(err)
+    }
 
-
-    http.HandleFunc("/leaderboard", getLeaderboard)
-    http.ListenAndServe(":8090", nil)
+    //http.HandleFunc("/leaderboard", getLeaderboard)
+    //http.ListenAndServe(":8090", nil)
 }

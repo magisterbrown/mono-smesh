@@ -2,8 +2,6 @@ module ranking
 
 go 1.18
 
-require github.com/mattn/go-sqlite3 v1.14.17
-
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/containerd/containerd v1.7.7 // indirect
@@ -15,6 +13,7 @@ require (
 	github.com/dustinkirkland/golang-petname v0.0.0-20231002161417-6a283f1aaaf2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/mafredri/go-trueskill v0.0.0-20190101120706-fc89fbba5a88 // indirect
 	github.com/moby/moby v24.0.6+incompatible // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
