@@ -2,9 +2,9 @@ package main
 
 import (
     "fmt"
-    "log"
     "math"
     "net/http"
+    "io/ioutil"
     "database/sql"
     "encoding/json"
     "ranking/models"
@@ -89,7 +89,16 @@ func main() {
     var err error
     models.DB, err = sql.Open("postgres", config.DBurl) 
     if err != nil {
-        log.Fatal(err)
+        panic(err)
+    }
+
+    file, err := ioutil.ReadFile("./schema.sql")
+    if err != nil {
+        panic(err)
+    }
+    _, err = models.DB.Exec(string(file))
+    if err != nil {
+        panic(err)
     }
 
     //ct, _ := models.GetAgentsN()

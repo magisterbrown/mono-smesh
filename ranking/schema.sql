@@ -1,12 +1,13 @@
-DROP SCHEMA public CASCADE;
+/* DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
+*/
 
-CREATE TABLE players (
+CREATE TABLE IF NOT EXISTS players (
     id SERIAL PRIMARY KEY,
     user_name VARCHAR(128) UNIQUE NOT NULL
 );
 
-CREATE TABLE submissions (
+CREATE TABLE IF NOT EXISTS submissions (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     container_id VARCHAR(128) NOT NULL,
@@ -17,4 +18,4 @@ CREATE TABLE submissions (
 );
 
 INSERT INTO players (user_name)
-VALUES ('JohnDoe'), ('goof'), ('sam'), ('biilyherington');
+VALUES ('JohnDoe'), ('goof'), ('sam'), ('biilyherington') ON CONFLICT DO NOTHING;
