@@ -72,6 +72,7 @@ def login(cred: Credentials):
 
     return {"Authorization": secret}
 
+# TODO: when header is missing return 401
 @app.api_route(subdomain, methods=["GET"])
 def authentify(authorization: Annotated[str , Header()]):
     db = Session()

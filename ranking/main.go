@@ -111,6 +111,6 @@ func main() {
         panic(err)
     }
 
-    //http.HandleFunc("/leaderboard", getLeaderboard)
-    //http.ListenAndServe(":5000", nil)
+    http.HandleFunc("/api/leaderboard", getLeaderboard)
+    http.ListenAndServe(":5000", nil)
 }
