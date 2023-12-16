@@ -93,6 +93,7 @@ func main() {
     }
 
     //ct, _ := models.GetAgentsN()
+    fmt.Println("Started")
 
 
     err = compete.InitGame()
@@ -102,5 +103,5 @@ func main() {
     }
 
     //http.HandleFunc("/leaderboard", getLeaderboard)
-    //http.ListenAndServe(":8090", nil)
+    //http.ListenAndServe(":5000", nil)
 }

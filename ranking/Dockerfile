@@ -1,12 +1,8 @@
-FROM docker:latest
+FROM golang:latest
 
-RUN apk add --no-cache go make sqlite python3-dev py-pip 
-RUN apk add --no-cache sdl2-dev dpkg-dev freetype-dev #Environment requirements
-COPY games/requirements.txt .
-RUN python3 -m pip install -r requirements.txt
 COPY . /sources
 WORKDIR /sources
 ENV GOCACHE=/root/.cache/go-build
-RUN --mount=type=cache,target="/root/.cache/go-build" make
+RUN --mount=type=cache,target="/root/.cache/go-build" go build  -o ./server ./main.go
 
-ENTRYPOINT make run
+CMD ["./server"]

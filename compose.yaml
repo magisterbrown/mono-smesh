@@ -2,14 +2,16 @@ services:
   proxy:
       build: .
       ports:
-        - "8080:8000"
+        - "8060:8060"
       depends_on:
         - auth
   
   db:
-    image: postgres:latest
+    #image: postgres:latest
+    build: ./postgresdb
     environment:
-      - POSTGRES_DB=auth_ranking
+      - POSTGRES_MULTIPLE_DATABASES=auth_ranking,subm_ranking
+      #- POSTGRES_DB=auth_ranking
       - POSTGRES_USER=magisterbrownie
       - POSTGRES_PASSWORD=post
     healthcheck:
@@ -20,6 +22,14 @@ services:
 
   auth:
     build: auth/
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build: ranking/
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       db:
         condition: service_healthy

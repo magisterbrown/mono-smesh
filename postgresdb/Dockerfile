@@ -1,0 +1,2 @@
+FROM postgres:latest
+COPY ./createdb.sh /docker-entrypoint-initdb.d/

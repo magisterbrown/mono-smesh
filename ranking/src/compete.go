@@ -30,11 +30,11 @@ func ScheduleNGames(agent models.Agent, nGames int) {
         } else {
             //TODO: support draws
             if winner == nil {
-                models.RecordResult(&agent, winner, true)
+                //models.RecordResult(&agent, winner, true)
             }else if(winner.Id == agent.Id){
-                models.RecordResult(&agent, winner, false)
+                //models.RecordResult(&agent, winner, false)
             } else {
-                models.RecordResult(winner, &agent, false)
+                //models.RecordResult(winner, &agent, false)
             }
         }
         //comparable := make([]trueskill.Player, len(agents))
@@ -45,7 +45,7 @@ func ScheduleNGames(agent models.Agent, nGames int) {
 }
 
 func InitGame() error {
-    file, err := archive.TarWithOptions(config.GameFolder, &archive.TarOptions{IncludeFiles: []string{"Dockerfile", "test.py","play.py", "requirements.txt"}})
+    file, err := archive.TarWithOptions(config.GameFolder, &archive.TarOptions{IncludeFiles: []string{"Dockerfile", "play.py", "requirements.txt"}})
     if err != nil {
 	    return err
 	}

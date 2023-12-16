@@ -4,7 +4,7 @@ import (
     "database/sql"
     "ranking/config"
     "math"
-    "github.com/mafredri/go-trueskill"
+    //"github.com/mafredri/go-trueskill"
     "sync"
     "strings"
     "fmt"
@@ -71,22 +71,22 @@ func reloadAgent(agent *Agent) error {
     return DB.QueryRow("select raiting, sigma from submissions where id=?", agent.Id).Scan(&agent.Raiting, &agent.Sigma)
 }
 
-func updateAgent(ndata *Agent, pl *trueskill.Player) error {
-    _, err := DB.Exec("update submissions set raiting=?, sigma=? where id=?", pl.Mu(), pl.Sigma(), ndata.Id)
-    return err
-}
-
-func RecordResult(winner *Agent, looser *Agent, draw bool) {
-    mutex.Lock()
-    defer mutex.Unlock()
-    reloadAgent(winner)
-    reloadAgent(looser)
-    pl1 := trueskill.NewPlayer(winner.Raiting, winner.Sigma)
-    pl2 := trueskill.NewPlayer(looser.Raiting, looser.Sigma)
-    newSkills, _ := config.TsConfig().AdjustSkills([]trueskill.Player{pl1, pl2}, draw)
-    updateAgent(winner, &newSkills[0])
-    updateAgent(looser, &newSkills[1])
-}
+//func updateAgent(ndata *Agent, pl *trueskill.Player) error {
+//    _, err := DB.Exec("update submissions set raiting=?, sigma=? where id=?", pl.Mu(), pl.Sigma(), ndata.Id)
+//    return err
+//}
+//
+//func RecordResult(winner *Agent, looser *Agent, draw bool) {
+//    mutex.Lock()
+//    defer mutex.Unlock()
+//    reloadAgent(winner)
+//    reloadAgent(looser)
+//    pl1 := trueskill.NewPlayer(winner.Raiting, winner.Sigma)
+//    pl2 := trueskill.NewPlayer(looser.Raiting, looser.Sigma)
+//    newSkills, _ := config.TsConfig().AdjustSkills([]trueskill.Player{pl1, pl2}, draw)
+//    updateAgent(winner, &newSkills[0])
+//    updateAgent(looser, &newSkills[1])
+//}
 
 func GetAgentsN() (int, error) {
     var count int
@@ -97,6 +97,8 @@ func GetAgentsN() (int, error) {
 type Player struct {
     Id int
     Name string
+    Raiting float64
+    Agents int
 }
 
 func GetPlayer(token string) (Player, error) {
@@ -113,6 +115,8 @@ func GetLeaderboard() []Player {
     for rows.Next() {
         var player Player
         rows.Scan(&player.Id, &player.Name);
+        player.Raiting = 173
+        player.Agents = 7
         res = append(res, player);
     }
     return res
