@@ -6,6 +6,7 @@ import { authenticatedFetch } from '$lib/request.js'
 import { onMount } from "svelte";
 
 onMount( () => {
+    authenticatedFetch("/api/leaderboard");
 });
 let teams = [
     { id: 1, name: "BigTeam", score: 1200.3, agents: 5},

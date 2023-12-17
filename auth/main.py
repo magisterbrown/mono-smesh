@@ -74,12 +74,14 @@ def login(cred: Credentials):
 
 # TODO: when header is missing return 401
 @app.api_route(subdomain, methods=["GET"])
-def authentify(authorization: Annotated[str , Header()]):
+def authentify(method: Annotated[str, Header()], authorization: Annotated[str | None , Header()] = None):
+    if method=="OPTIONS":
+        return Response(status_code=200)
     db = Session()
     if authorization is None:
         raise HTTPException(status_code=401)
     try:
-        token = db.execute(select(Token).where(Token.token==hasher(authorization))).one()[0]
+        token = db.execute(select(Token).where(Token.token==hasher(authorization.strip('"')))).one()[0]
     except NoResultFound:
         raise HTTPException(status_code=401)
     return Response(status_code=200, headers={"User-Name": token.user.user_name})

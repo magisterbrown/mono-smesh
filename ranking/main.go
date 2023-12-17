@@ -21,7 +21,12 @@ import (
 func getLeaderboard(w http.ResponseWriter, req *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     switch req.Method {
-        case "GET", "HEAD":
+        case "OPTIONS":
+            w.Header().Set("Allow", "OPTIONS, GET, HEAD, POST")
+            //w.Header().Set("Access-Control-Allow-Origin", "*")
+            w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+            w.WriteHeader(http.StatusOK)
+        case "GET", "HEAD": 
             res := models.GetLeaderboard()
             fmt.Fprintf(w, req.Method)
             json.NewEncoder(w).Encode(res)
