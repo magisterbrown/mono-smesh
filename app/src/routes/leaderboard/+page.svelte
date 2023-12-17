@@ -5,14 +5,14 @@ import { faBook} from '@fortawesome/free-solid-svg-icons'
 import { authenticatedFetch } from '$lib/request.js'
 import { onMount } from "svelte";
 
+let teams = [];
+
 onMount( () => {
-    authenticatedFetch("/api/leaderboard");
+    authenticatedFetch("/api/leaderboard").then(resp => {
+        resp.json().then(body => {teams = body});
+    });
 });
-let teams = [
-    { id: 1, name: "BigTeam", score: 1200.3, agents: 5},
-    { id: 2, name: "BigTeamU", score: 1101.1, agents: 15},
-    { id: 3, name: "LuTeam", score: 45.3, agents: 3695}
-]
+
 </script>
 <Header sel="leader"></Header>
 <div class="content">
@@ -24,15 +24,16 @@ let teams = [
             <span class="agents">Agents</span>
         </div>
         <div >
-            {#each teams as team, i}
-                <div class="listed leader">
-                    <span class="rank">{i+1}</span>
-                    <span class="team">{team.name}</span>
-                    <span class="score">{team.score}</span>
-                    <span class="agents">{team.agents}  <Fa icon={faBook} style="cursor:pointer; font-size: 1.0rem"/>
-</span>
-                </div>
-            {/each}
+            {#if teams.length}
+                {#each teams as team, i}
+                    <div class="listed leader">
+                        <span class="rank">{i+1}</span>
+                        <span class="team">{team.Name}</span>
+                        <span class="score">{team.Raiting}</span>
+                        <span class="agents">{team.Agents}  <Fa icon={faBook} style="cursor:pointer; font-size: 1.0rem"/></span>
+                    </div>
+                {/each}
+            {/if}
             
         </div>
     </div>

@@ -28,7 +28,6 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             w.WriteHeader(http.StatusOK)
         case "GET", "HEAD": 
             res := models.GetLeaderboard()
-            fmt.Fprintf(w, req.Method)
             json.NewEncoder(w).Encode(res)
         case "POST":
             req.ParseMultipartForm(11 << 20) 
