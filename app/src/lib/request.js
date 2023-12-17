@@ -1,5 +1,4 @@
-const backend_url = "http://localhost:8060"
-
+import { backend_url } from './config.js';
 export async function authenticatedFetch(endpoint, options = {}) {
     let resp = await fetch(backend_url+endpoint, {... options});
     if (resp.status === 404) {

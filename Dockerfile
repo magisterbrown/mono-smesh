@@ -1,6 +1,7 @@
 FROM node:20 as build
 COPY ./app /app
 WORKDIR /app
+RUN mv src/lib/config_deploy.js src/lib/config.js
 RUN npm install
 RUN npm run build
 

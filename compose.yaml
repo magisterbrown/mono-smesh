@@ -2,7 +2,7 @@ services:
   proxy:
       build: .
       ports:
-        - "8060:8060"
+        - "8010:8060"
       depends_on:
         - auth
   
