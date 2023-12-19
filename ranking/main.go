@@ -33,6 +33,7 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
         case "POST":
             
             //Get from content
+
             // TODO: add form size limit to config
             req.ParseMultipartForm(11 << 20) 
             player, err := models.GetOrCreatePlayer(req.Header.Get("User-Name"));
@@ -54,8 +55,8 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
                 SuppressOutput: true,                           
                 Dockerfile: "submission/Dockerfile",           
             }                                                 
-            // TODO: limit build time
 
+            // TODO: limit build time
             resp, err := dock_cli.ImageBuild(context.Background(), file, options)
             if err != nil {
                 http.Error(w, "Failed to build and image: "+err.Error(), http.StatusBadRequest)
@@ -66,29 +67,39 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             //Crete Agent
             var submission models.Agent
             submission.FileName = header.Filename
+            submission.Broken = false;
             //defer SaveAgent(&submission, player);
 
             json.NewDecoder(resp.Body).Decode(&submission)
             submission.Image = strings.TrimSuffix(strings.TrimPrefix(submission.Image, "sha256:"), "\n")
+
+            // TODO: play one match
             //_, err = compete.Match(&submission, &submission);
             //if(err != nil){
             //	http.Error(w, "Agent does not play by the rules", http.StatusBadRequest)
             //	return
             //}
-            //err = models.SaveAgent(&submission, player)
-            //if err != nil{
-            //    panic(err)
-            //}
+            err = models.CreateAgentDB(&submission, player)
+            if err != nil{
+                http.Error(w, "Agent works correct but did not save because: "+err.Error(), http.StatusBadRequest)
+		        return
+            }
 
-            //// TODO: Schedule games
+            // TODO: Schedule games
             //competitors, err := models.GetAgentsN()
             //if err != nil{
             //    panic(err)
             //}
             //matches := int(math.Ceil(2*math.Log2(float64(competitors))))
             //go compete.ScheduleNGames(submission, matches)
+            json_submission, err := json.Marshal(submission)
+            if err != nil{
+                http.Error(w, "Agent cant be serialized because: "+err.Error(), http.StatusBadRequest)
+                //TODO: mark agent as broken
+		        return
+            }
             w.WriteHeader(200);
-            json.NewEncoder(w).Encode(map[string]string{"status":"ok", "raiting": "600"})
+            json.NewEncoder(w).Encode(map[string]string{"status":"ok", "agent": string(json_submission)})
         default:
             w.WriteHeader(404)
     }
@@ -109,6 +120,16 @@ func main() {
     if err != nil {
         panic(err)
     }
+
+
+
+    //_, err = models.DB.Exec("INSERT INTO submissions (user_id, file_name,  container_id, raiting, sigma) values (1, 'insertedSBOOT', 'sds.ere', 34, 23)");
+    //if err != nil {
+    //    panic(err)
+    //}
+
+
+
 	dock_cli, err = client.NewClientWithOpts(client.FromEnv)
     if err != nil {
         panic(err)

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS players (
 CREATE TABLE IF NOT EXISTS submissions (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
+    file_name VARCHAR(128) NOT NULL,
     container_id VARCHAR(128) NOT NULL,
     raiting FLOAT NOT NULL,
     sigma FLOAT NOT NULL,

@@ -14,11 +14,11 @@ var DB *sql.DB
 var mutex sync.Mutex
 
 type Agent struct {
-    Id int64
-    UserId int //TODO: fill it
-    FileName string
+    Id int64 
+    UserId int 
+    FileName string 
     Image string `json:"stream"`
-    Raiting float64
+    Raiting float64 
     Sigma float64
     Broken bool
 }
@@ -29,19 +29,12 @@ type Agent struct {
 //    Draw bool
 //}
 
-func CreateAgent(data *Agent, owner Player) error {
+func CreateAgentDB(data *Agent, owner Player) error {
     data.Raiting = config.DefMu
-    _ = data.Raiting
-    //data.Sigma = config.DefSig
-    //res, err := DB.Exec("INSERT INTO submissions (user_id, container_id, raiting, sigma) VALUES (?, ?, ?, ?)", owner.Id, data.Image, data.Raiting, data.Sigma);
-    //if err != nil {
-    //    return err
-    //}
-    //idx, err := res.LastInsertId();
-    //data.Id = idx
-    //data.UserId = owner.Id
-    //return err;
-    return nil;
+    data.Sigma = config.DefSig
+    err := DB.QueryRow("INSERT INTO submissions (user_id, file_name,  container_id, raiting, sigma) VALUES ($1, $2, $3, $4, $5) RETURNING id", owner.Id, data.FileName, data.Image, data.Raiting, data.Sigma).Scan(&data.Id);
+    data.UserId = owner.Id
+    return err;
 }
 
 
