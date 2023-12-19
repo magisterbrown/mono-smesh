@@ -73,7 +73,7 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             json.NewDecoder(resp.Body).Decode(&submission)
             submission.Image = strings.TrimSuffix(strings.TrimPrefix(submission.Image, "sha256:"), "\n")
 
-            // TODO: play one match
+            // TODO: play one match against itself
             //_, err = compete.Match(&submission, &submission);
             //if(err != nil){
             //	http.Error(w, "Agent does not play by the rules", http.StatusBadRequest)
@@ -92,14 +92,9 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             //}
             //matches := int(math.Ceil(2*math.Log2(float64(competitors))))
             //go compete.ScheduleNGames(submission, matches)
-            json_submission, err := json.Marshal(submission)
-            if err != nil{
-                http.Error(w, "Agent cant be serialized because: "+err.Error(), http.StatusBadRequest)
-                //TODO: mark agent as broken
-		        return
-            }
+           
             w.WriteHeader(200);
-            json.NewEncoder(w).Encode(map[string]string{"status":"ok", "agent": string(json_submission)})
+            json.NewEncoder(w).Encode(submission) //TODO: handle serializaiton errors
         default:
             w.WriteHeader(404)
     }
@@ -121,30 +116,17 @@ func main() {
         panic(err)
     }
 
-
-
-    //_, err = models.DB.Exec("INSERT INTO submissions (user_id, file_name,  container_id, raiting, sigma) values (1, 'insertedSBOOT', 'sds.ere', 34, 23)");
-    //if err != nil {
-    //    panic(err)
-    //}
-
-
-
 	dock_cli, err = client.NewClientWithOpts(client.FromEnv)
     if err != nil {
         panic(err)
     }
 
-    //ct, _ := models.GetAgentsN()
-    fmt.Println("Started")
-
-
     err = compete.InitGame()
-
     if err != nil {
         panic(err)
     }
 
+    fmt.Println("Initialized all systems")
     http.HandleFunc("/api/leaderboard", getLeaderboard)
     http.ListenAndServe(":5000", nil)
 }
