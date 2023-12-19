@@ -16,9 +16,11 @@ var mutex sync.Mutex
 type Agent struct {
     Id int64
     UserId int //TODO: fill it
+    FileName string
     Image string `json:"stream"`
     Raiting float64
     Sigma float64
+    Broken bool
 }
 
 //type PlayedMatch struct {
@@ -27,17 +29,19 @@ type Agent struct {
 //    Draw bool
 //}
 
-func SaveAgent(data *Agent, owner Player) error {
+func CreateAgent(data *Agent, owner Player) error {
     data.Raiting = config.DefMu
-    data.Sigma = config.DefSig
-    res, err := DB.Exec("INSERT INTO submissions (user_id, container_id, raiting, sigma) VALUES (?, ?, ?, ?)", owner.Id, data.Image, data.Raiting, data.Sigma);
-    if err != nil {
-        return err
-    }
-    idx, err := res.LastInsertId();
-    data.Id = idx
-    data.UserId = owner.Id
-    return err;
+    _ = data.Raiting
+    //data.Sigma = config.DefSig
+    //res, err := DB.Exec("INSERT INTO submissions (user_id, container_id, raiting, sigma) VALUES (?, ?, ?, ?)", owner.Id, data.Image, data.Raiting, data.Sigma);
+    //if err != nil {
+    //    return err
+    //}
+    //idx, err := res.LastInsertId();
+    //data.Id = idx
+    //data.UserId = owner.Id
+    //return err;
+    return nil;
 }
 
 
@@ -101,10 +105,10 @@ type Player struct {
     Agents int
 }
 
-func GetPlayer(token string) (Player, error) {
+func GetOrCreatePlayer(user_name string) (Player, error) {
     // TODO: defence from sql injections.
     var user Player
-    err := DB.QueryRow("select * from players where id in (select user_id from sessions where token='"+token+"')").Scan(&user.Id, &user.Name);
+    err := DB.QueryRow("insert into players (user_name) values ('"+user_name+"')  on conflict do nothing; select * from players where user_name='"+user_name+"'").Scan(&user.Id, &user.Name);
     return user, err
 }
 
