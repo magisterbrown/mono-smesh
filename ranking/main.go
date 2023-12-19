@@ -30,6 +30,9 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             res := models.GetLeaderboard()
             json.NewEncoder(w).Encode(res)
         case "POST":
+            w.WriteHeader(200);
+            fmt.Println("file arrived");
+            return;
             req.ParseMultipartForm(11 << 20) 
 
             //Authentication

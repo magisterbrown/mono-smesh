@@ -1,12 +1,12 @@
 import { backend_url } from './config.js';
 
-export async function authenticatedFetch(endpoint, options = {}) {
+export async function authenticatedFetch(endpoint, method = "GET",  headers = {}, body = {}) {
     const token = localStorage.getItem("Authorization");
     if(token == null) window.location.href='/signup';
-    let resp = await fetch(backend_url+endpoint, {headers: {"Content-Type": "application/json", "Authorization": token}});
-    if (resp.status === 404) {
-       window.location.href='/signup'; 
-    }
+    let resp = await fetch(backend_url+endpoint, {method: method, headers: {"Content-Type": "application/json", "Authorization": token, ...headers}, body: body});
+    //if (resp.status === 404) {
+    //   window.location.href='/signup'; 
+    //}
     return resp
 }
 

@@ -2,12 +2,21 @@
 import Header from '../Header.svelte';
 import Fa from 'svelte-fa/src/fa.svelte'
 import { faCheck, faXmark, faBook} from '@fortawesome/free-solid-svg-icons'
+import { authenticatedFetch } from '$lib/request.js';
 let agents = [
     {id: 0, name: "subm.tar", sucess: true, score: 500},
     {id: 1, name: "agent.tar", sucess: false, score: 200},
     {id: 2, name: "last.tar", sucess: true, score: 600}
 
 ];
+
+function uploadAgent(e) {
+    const file = Object.fromEntries(new FormData(e.target)).file;
+    console.log(file);
+    console.log(file.name);
+    authenticatedFetch("/api/leaderboard", "POST", {}, file);
+    //fetch("bs.com", {method: "POST", body: file});
+}
 </script>
 <Header sel="subm"></Header>
 <div class="content">
@@ -17,8 +26,8 @@ let agents = [
         List of all your active agents. Green ones are active on the leader board.
         Download example agent tar file, unpack it and try to upload your own python agent.
         </div>
-        <form class="filed">
-             <input type="file" name="file" id="file" class="inputfile" />
+        <form class="filed" on:submit|preventDefault={uploadAgent}>
+             <input type="file" name="file" id="file" class="inputfile" accept=".tar"/>
              <input type="submit" class="send" value="Upload Agent">
         </form>
     </div>
