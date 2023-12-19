@@ -31,9 +31,10 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             json.NewEncoder(w).Encode(res)
         case "POST":
             w.WriteHeader(200);
-            fmt.Println("file arrived");
-            return;
             req.ParseMultipartForm(11 << 20) 
+            fmt.Println(req.Header.Get("User-Name"));
+            file, _, err:= req.FormFile("file")
+            return;
 
             //Authentication
             player, err := models.GetPlayer(req.Header.Get("Authorization"));
@@ -43,7 +44,6 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             }
 
             //Processing form
-            file, _, err:= req.FormFile("submission")
             if err != nil {
             	http.Error(w, "Error retrieving file from form", http.StatusBadRequest)
             	return

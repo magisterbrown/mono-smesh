@@ -11,11 +11,7 @@ let agents = [
 ];
 
 function uploadAgent(e) {
-    const file = Object.fromEntries(new FormData(e.target)).file;
-    console.log(file);
-    console.log(file.name);
-    authenticatedFetch("/api/leaderboard", "POST", {}, file);
-    //fetch("bs.com", {method: "POST", body: file});
+    authenticatedFetch("/api/leaderboard", "POST", {}, new FormData(e.target));
 }
 </script>
 <Header sel="subm"></Header>
