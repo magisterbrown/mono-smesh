@@ -18,7 +18,6 @@ import (
     "strings"
 )
 
-var dock_cli *client.Client;
 
 func getLeaderboard(w http.ResponseWriter, req *http.Request) {
     w.Header().Set("Content-Type", "application/json")
@@ -57,7 +56,7 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             }                                                 
 
             // TODO: limit build time
-            resp, err := dock_cli.ImageBuild(context.Background(), file, options)
+            resp, err := compete.Dock_cli.ImageBuild(context.Background(), file, options)
             if err != nil {
                 http.Error(w, "Failed to build and image: "+err.Error(), http.StatusBadRequest)
 		        return
@@ -68,13 +67,12 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             var submission models.Agent
             submission.FileName = header.Filename
             submission.Broken = false;
-            //defer SaveAgent(&submission, player);
 
             json.NewDecoder(resp.Body).Decode(&submission)
             submission.Image = strings.TrimSuffix(strings.TrimPrefix(submission.Image, "sha256:"), "\n")
 
             // TODO: play one match against itself
-            //_, err = compete.Match(&submission, &submission);
+            _, err = compete.Match(&submission, &submission);
             //if(err != nil){
             //	http.Error(w, "Agent does not play by the rules", http.StatusBadRequest)
             //	return
@@ -116,7 +114,7 @@ func main() {
         panic(err)
     }
 
-	dock_cli, err = client.NewClientWithOpts(client.FromEnv)
+	compete.Dock_cli, err = client.NewClientWithOpts(client.FromEnv)
     if err != nil {
         panic(err)
     }
