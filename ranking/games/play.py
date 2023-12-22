@@ -13,7 +13,6 @@ client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 client.connect(args.socket)
 
 # Game simulation
-
 env = rps_v2.env(max_cycles=1)
 env.reset(seed=42)
 #acc_rewards = env.rewards.copy()

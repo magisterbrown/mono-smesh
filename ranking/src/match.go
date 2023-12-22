@@ -42,6 +42,12 @@ func startContainer(image string, command string) (types.HijackedResponse, strin
     return hijack, playercontID, err
 }
 
+type Request struct {
+    Type string  
+    Agent string
+    Args map[string]interface{}
+}
+
 
 func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) {
     sock_name := "/" + uuid.New().String() + ".sock";
@@ -64,7 +70,8 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) 
     if err != nil {
         panic(err)
     }
-
+    
+    //Event loop of the game
     for {
         conn, err := socket.Accept()
         if err != nil {
@@ -72,8 +79,17 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) 
         }
         buf := make([]byte, 4096)
         n, err := conn.Read(buf)
-        fmt.Println(string(buf[:n]))
+        req := Request{}
+        if err = json.Unmarshal(buf[:n], &req); err != nil {
+            panic(err)
+        }
+        var command string 
+        for key, value := range req.Args {
+            command += fmt.Sprintf(" --%s %v", key, value)
+        }
+        fmt.Println(command)
         conn.Close()
+        break
     }
     return player1, nil
     
