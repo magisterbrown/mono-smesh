@@ -4,13 +4,15 @@ import json
 
 from pettingzoo.classic import rps_v2
 
+# To test:
+# nc -lkU ./test.sock
+# python3 play.py ./test.sock
+
 # Establish connection with a server that manages agents
 parser = argparse.ArgumentParser()
 parser.add_argument("socket")
 args = parser.parse_args()
 
-client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-client.connect(args.socket)
 
 # Game simulation
 env = rps_v2.env(max_cycles=1)
@@ -19,18 +21,28 @@ env.reset(seed=42)
 for agent in env.agent_iter():
     observation, reward, termination, truncation, info = env.last()
     if termination or truncation:
-        action = None
+        break
     else:
         # this is where you would insert your policy
-        client.sendall(json.dumps({"type": "move", "agent": agent, "args": {"observation": observation.tolist()}}).encode())
-        action = client.recv(16)
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+            client.connect(args.socket)
+            client.sendall(json.dumps({"type": "move", "agent": agent, "args": {"observation": observation.tolist()}}).encode())
+            action = client.recv(16)
     try:
+        print(int(action))
         env.step(int(action))
     except:
+        # TODO: handle move with error
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+            client.connect(args.socket)
+            client.sendall(json.dumps({"type": "done"}).encode())
         raise AssertionError("TODO: handle illegal move")
 #    for agent, reward in env.rewards.items():
 #        acc_rewards[agent]+=reward
 env.close()
+with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+    client.connect(args.socket)
+    client.sendall(json.dumps({"type": "done"}).encode())
 
 #winner = max(acc_rewards, key=acc_rewards.get)
 #if all(value == 0 for value in acc_rewards.values()):

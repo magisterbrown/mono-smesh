@@ -78,18 +78,29 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) 
             panic(err)
         }
         buf := make([]byte, 4096)
+        fmt.Println("waiting")
         n, err := conn.Read(buf)
+        fmt.Println("income")
         req := Request{}
         if err = json.Unmarshal(buf[:n], &req); err != nil {
             panic(err)
         }
-        var command string 
-        for key, value := range req.Args {
-            command += fmt.Sprintf(" --%s %v", key, value)
+        fmt.Println(req.Type)
+        fmt.Println(req.Agent)
+        if req.Type == "done" {
+            break
         }
-        fmt.Println(command)
-        conn.Close()
-        break
+        go func(req Request, conn net.Conn){
+            defer conn.Close()
+            var command string 
+            for key, value := range req.Args {
+                command += fmt.Sprintf(" --%s %v", key, value)
+            }
+            // TODO: run agent
+            fmt.Println(command)
+            conn.Write([]byte("1\n"))
+            fmt.Println("Writeen")
+        }(req, conn)
     }
     return player1, nil
     
