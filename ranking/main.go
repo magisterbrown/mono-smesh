@@ -73,10 +73,12 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
 
             // TODO: play one match against itself
             _, err = compete.Match(&submission, &submission);
-            //if(err != nil){
-            //	http.Error(w, "Agent does not play by the rules", http.StatusBadRequest)
-            //	return
-            //}
+            if(err != nil){
+            	http.Error(w, "Agent does not play by the rules", http.StatusBadRequest)
+            	return
+            }
+            
+            // Save agent
             err = models.CreateAgentDB(&submission, player)
             if err != nil{
                 http.Error(w, "Agent works correct but did not save because: "+err.Error(), http.StatusBadRequest)

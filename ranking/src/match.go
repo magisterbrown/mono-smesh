@@ -42,6 +42,7 @@ func startContainer(image string, command string) (types.HijackedResponse, strin
 
 
 func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) {
+    return player1, nil
     
     //Start game container
     hijack, gamecontID, err := startContainer(config.GameTag, "")
@@ -49,6 +50,7 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) 
         panic(err)
     }
     defer hijack.Close()
+
 
     agents := map[string]*models.Agent{
             "player_0": player1,

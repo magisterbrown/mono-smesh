@@ -11,6 +11,7 @@ const (
 )
 
 
+
 //func TsConfig() trueskill.Config {
 //    prob, _ := trueskill.DrawProbability(33)
 //    
