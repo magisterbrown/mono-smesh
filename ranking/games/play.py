@@ -1,6 +1,7 @@
 import argparse
 import socket
 import json
+from typing import Optional
 
 from pettingzoo.classic import rps_v2
 
@@ -13,6 +14,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("socket")
 args = parser.parse_args()
 
+def request(data: dict, recv: int = 0) -> Optional[bytes]:
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+        client.connect(args.socket)
+        client.sendall(json.dumps(data).encode())
+        if recv:
+            return client.recv(recv)
+
 
 # Game simulation
 env = rps_v2.env(max_cycles=1)
@@ -24,25 +32,18 @@ for agent in env.agent_iter():
         break
     else:
         # this is where you would insert your policy
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
-            client.connect(args.socket)
-            client.sendall(json.dumps({"type": "move", "agent": agent, "args": {"observation": observation.tolist()}}).encode())
-            action = client.recv(16)
+        action = request({"type": "move", "agent": agent, "args": {"observation": observation.tolist()}}, 16)
     try:
         print(int(action))
         env.step(int(action))
     except:
         # TODO: handle move with error
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
-            client.connect(args.socket)
-            client.sendall(json.dumps({"type": "done"}).encode())
+        request({"type": "done"})
         raise AssertionError("TODO: handle illegal move")
 #    for agent, reward in env.rewards.items():
 #        acc_rewards[agent]+=reward
 env.close()
-with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
-    client.connect(args.socket)
-    client.sendall(json.dumps({"type": "done"}).encode())
+request({"type": "done"})
 
 #winner = max(acc_rewards, key=acc_rewards.get)
 #if all(value == 0 for value in acc_rewards.values()):
