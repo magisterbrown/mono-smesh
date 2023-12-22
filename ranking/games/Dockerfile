@@ -3,4 +3,4 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY play.py .
 
-ENTRYPOINT python3 play.py
+ENTRYPOINT ["python3", "play.py"]

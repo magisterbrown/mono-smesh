@@ -12,6 +12,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustinkirkland/golang-petname v0.0.0-20231002161417-6a283f1aaaf2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/moby/moby v24.0.6+incompatible // indirect

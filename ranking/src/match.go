@@ -2,12 +2,14 @@ package compete
 
 import (
     "fmt"
+    "net"
     "context"
     "encoding/json"
     "github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
     "github.com/docker/docker/api/types/container"
     "github.com/docker/docker/api/types/strslice"
+    "github.com/google/uuid"
     "ranking/config"
     "ranking/models"
 )
@@ -42,6 +44,37 @@ func startContainer(image string, command string) (types.HijackedResponse, strin
 
 
 func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) {
+    sock_name := "/" + uuid.New().String() + ".sock";
+    socket, err := net.Listen("unix", config.SockerVolumePath + sock_name)
+    if err != nil {
+        panic(err)
+    }
+    defer socket.Close()
+    fmt.Println(sock_name);
+
+    conf := container.Config{Image: config.GameTag, Cmd: strslice.StrSlice{"/sockets" + sock_name}}
+    hostConf := container.HostConfig{Binds: []string{config.SocketVolumeName + ":/sockets"}}
+    _ = hostConf
+    _ = conf
+    gamecont, err := Dock_cli.ContainerCreate(context.Background(), &conf, &hostConf, nil, nil, "")
+    if err != nil {
+        panic(err)
+    }
+    err = Dock_cli.ContainerStart(context.Background(), gamecont.ID, types.ContainerStartOptions{})
+    if err != nil {
+        panic(err)
+    }
+
+    for {
+        conn, err := socket.Accept()
+        if err != nil {
+            panic(err)
+        }
+        buf := make([]byte, 4096)
+        n, err := conn.Read(buf)
+        fmt.Println(string(buf[:n]))
+        conn.Close()
+    }
     return player1, nil
     
     //Start game container
