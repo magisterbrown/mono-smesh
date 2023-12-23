@@ -36,7 +36,6 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             // TODO: add form size limit to config
             req.ParseMultipartForm(11 << 20) 
             player, err := models.GetOrCreatePlayer(req.Header.Get("User-Name"));
-            _ = player;
             if err != nil {
             	http.Error(w, "Idk how in the world you got this error. Try resubmitting or new acount", http.StatusBadRequest)
             	return
@@ -72,8 +71,8 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             submission.Image = strings.TrimSuffix(strings.TrimPrefix(submission.Image, "sha256:"), "\n")
 
             // TODO: play one match against itself
-            _, err = compete.Match(&submission, &submission);
-            if(err != nil){
+            compete.Match(&submission, &submission);
+            if(submission.Broken){
             	http.Error(w, "Agent does not play by the rules", http.StatusBadRequest)
             	return
             }

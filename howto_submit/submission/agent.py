@@ -3,6 +3,7 @@ import json
 import random
 
 def agent(state: dict) -> dict:
+    raise ValueError
     res = random.choice([0,1,2])
     if state["observation"] == 1:
         raise ValueError

@@ -45,23 +45,23 @@ func startContainer(image string, command string) (types.HijackedResponse, strin
 type Request struct {
     Type string  
     Agent string
+
+    //Optional fields
     Args map[string]interface{}
+    Broken string
 }
 
 
-func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) {
+func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, *models.Agent) {
     sock_name := "/" + uuid.New().String() + ".sock";
     socket, err := net.Listen("unix", config.SockerVolumePath + sock_name)
     if err != nil {
         panic(err)
     }
     defer socket.Close()
-    fmt.Println(sock_name);
 
     conf := container.Config{Image: config.GameTag, Cmd: strslice.StrSlice{"/sockets" + sock_name}}
     hostConf := container.HostConfig{Binds: []string{config.SocketVolumeName + ":/sockets"}}
-    _ = hostConf
-    _ = conf
     gamecont, err := Dock_cli.ContainerCreate(context.Background(), &conf, &hostConf, nil, nil, "")
     if err != nil {
         panic(err)
@@ -71,6 +71,7 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) 
         panic(err)
     }
     
+    req := Request{}
     //Event loop of the game
     for {
         conn, err := socket.Accept()
@@ -81,11 +82,10 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) 
         fmt.Println("waiting")
         n, err := conn.Read(buf)
         fmt.Println("income")
-        req := Request{}
+        req = Request{}
         if err = json.Unmarshal(buf[:n], &req); err != nil {
             panic(err)
         }
-        fmt.Println(req.Type)
         fmt.Println(req.Agent)
         if req.Type == "done" {
             break
@@ -99,11 +99,32 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) 
             // TODO: run agent
             fmt.Println(command)
             conn.Write([]byte("1\n"))
-            fmt.Println("Writeen")
         }(req, conn)
     }
-    return player1, nil
-    
+    err = Dock_cli.ContainerRemove(context.Background(), gamecont.ID, types.ContainerRemoveOptions{Force: true})
+    if(err != nil) {
+        panic(err)
+    }
+
+    agents := map[string]*models.Agent{
+            "player_0": player1,
+            "player_1": player2,
+    }
+
+    if req.Broken != "" {
+       agents[req.Broken].Broken = true
+    }
+
+    if req.Agent == "" {
+        return nil, nil
+    }
+
+    if agents[req.Agent] == player1 {
+        return player1, player2
+    }
+
+    return player2, player1
+
     //Start game container
     hijack, gamecontID, err := startContainer(config.GameTag, "")
     if err != nil {
@@ -112,10 +133,7 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) 
     defer hijack.Close()
 
 
-    agents := map[string]*models.Agent{
-            "player_0": player1,
-            "player_1": player2,
-    }
+    
 
     //Play game
     var message map[string]interface{}
@@ -177,7 +195,7 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, error) 
         panic(fmt.Errorf("Game did not set the player"))
     }
     if err != nil {
-        return agents[agent_idx], err
+        return agents[agent_idx], nil
     }
     if winner == "" {
         return nil, nil
