@@ -82,7 +82,6 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             submission.Broken = false
             submission.Image = string(idxMatch[1])
 
-            // TODO: play one match against itself
             compete.Match(&submission, &submission);
             if(submission.Broken){
             	http.Error(w, "Agent does not play by the rules", http.StatusBadRequest)
