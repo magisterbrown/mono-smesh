@@ -71,6 +71,11 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, *models
         panic(err)
     }
     
+    agents := map[string]*models.Agent{
+            "player_0": player1,
+            "player_1": player2,
+    }
+
     req := Request{}
     //Event loop of the game
     for {
@@ -90,15 +95,48 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, *models
         if req.Type == "done" {
             break
         }
-        go func(req Request, conn net.Conn){
+        go func(req Request, conn net.Conn) {
             defer conn.Close()
             var command string 
             for key, value := range req.Args {
                 command += fmt.Sprintf(" --%s %v", key, value)
             }
-            // TODO: run agent
-            fmt.Println(command)
-            conn.Write([]byte("1\n"))
+            agent := agents[req.Agent]
+
+            //Running agent
+            err = func() error {
+                conf := container.Config{Image: agent.Image, Tty: true,  Cmd:  strslice.StrSlice{command}}
+                cont, err := Dock_cli.ContainerCreate(context.Background(), &conf, nil, nil, nil, "")
+                if(err != nil) {
+                    return err
+                }
+
+                hijack, err := Dock_cli.ContainerAttach(context.Background(), cont.ID, types.ContainerAttachOptions{Stream:true, Stdout:true})
+
+                if(err != nil) {
+                    return err
+                }
+
+                if err = Dock_cli.ContainerStart(context.Background(), cont.ID, types.ContainerStartOptions{}); err != nil {
+                    return err
+                }
+                buf, _, err:= hijack.Reader.ReadLine()
+                if(err != nil) {
+                    return err
+                }
+                fmt.Println("stepp")
+                fmt.Println(string(buf))
+
+                if err = Dock_cli.ContainerRemove(context.Background(), cont.ID, types.ContainerRemoveOptions{Force: true}); err != nil {
+                    return err
+                }
+                conn.Write(buf)
+                return nil
+            }()
+            if err != nil{
+                conn.Write([]byte("broken"))
+            }
+
         }(req, conn)
     }
     err = Dock_cli.ContainerRemove(context.Background(), gamecont.ID, types.ContainerRemoveOptions{Force: true})
@@ -106,10 +144,6 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, *models
         panic(err)
     }
 
-    agents := map[string]*models.Agent{
-            "player_0": player1,
-            "player_1": player2,
-    }
 
     if req.Broken != "" {
        agents[req.Broken].Broken = true

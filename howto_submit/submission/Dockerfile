@@ -1,3 +1,3 @@
 FROM python:latest
-COPY submission/agent.py .
+COPY agent.py .
 ENTRYPOINT ["python3", "agent.py"]

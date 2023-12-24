@@ -2,6 +2,8 @@ package main
 
 import (
     "fmt"
+    "regexp"
+    "io"
     _ "math"
     "net/http"
     "io/ioutil"
@@ -15,7 +17,6 @@ import (
     "github.com/docker/docker/client"
     "github.com/dustinkirkland/golang-petname"
     "context"
-    "strings"
 )
 
 
@@ -51,24 +52,35 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             options := types.ImageBuildOptions{
                 Tags: []string{petname.Generate(2, "-")+":player"},
                 SuppressOutput: true,                           
-                Dockerfile: "submission/Dockerfile",           
+                Dockerfile: "Dockerfile",           
             }                                                 
 
             // TODO: limit build time
             resp, err := compete.Dock_cli.ImageBuild(context.Background(), file, options)
             if err != nil {
-                http.Error(w, "Failed to build and image: "+err.Error(), http.StatusBadRequest)
+                http.Error(w, "Falied before building: "+err.Error(), http.StatusBadRequest)
 		        return
 	        }
             defer resp.Body.Close()
 
+            buf := make([]byte, 4096)
+            n, err := resp.Body.Read(buf)
+            if err != nil && err != io.EOF{
+                http.Error(w, "Error when reading build result: "+err.Error(), http.StatusBadRequest)
+		        return
+	        }
+            re := regexp.MustCompile(`^{"stream":"sha256:(\w*)\\n"}`)
+            idxMatch := re.FindSubmatch(buf[:n])
+            if len(idxMatch) != 2{
+                http.Error(w, "Image build failed: "+string(buf[:n]), http.StatusBadRequest)
+		        return
+            }
+
             //Crete Agent
             var submission models.Agent
             submission.FileName = header.Filename
-            submission.Broken = false;
-
-            json.NewDecoder(resp.Body).Decode(&submission)
-            submission.Image = strings.TrimSuffix(strings.TrimPrefix(submission.Image, "sha256:"), "\n")
+            submission.Broken = false
+            submission.Image = string(idxMatch[1])
 
             // TODO: play one match against itself
             compete.Match(&submission, &submission);
