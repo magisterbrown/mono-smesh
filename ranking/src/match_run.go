@@ -4,6 +4,7 @@ import (
     "fmt"
     "net"
     "context"
+    "time"
     "encoding/json"
     "github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -12,6 +13,7 @@ import (
     "github.com/google/uuid"
     "ranking/config"
     "ranking/models"
+    "math/rand"
 )
 
 var Dock_cli *client.Client;
@@ -23,6 +25,14 @@ type Request struct {
     //Optional fields
     Args map[string]interface{}
     Broken string
+}
+
+func MatchShuffle(player1 *models.Agent, player2 *models.Agent) (*models.Agent, *models.Agent) {
+    rand.Seed(time.Now().UnixNano())
+    if(rand.Intn(2) == 1){
+        return Match(player1, player2)
+    }
+    return Match(player2, player1)
 }
 
 
@@ -83,7 +93,6 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, *models
                 }
 
                 hijack, err := Dock_cli.ContainerAttach(context.Background(), cont.ID, types.ContainerAttachOptions{Stream:true, Stdout:true})
-
                 if(err != nil) {
                     return err
                 }

@@ -3,8 +3,7 @@ package models
 import (
     "database/sql"
     "ranking/config"
-    "math"
-    //"github.com/mafredri/go-trueskill"
+    "github.com/mafredri/go-trueskill"
     "sync"
     "strings"
     "fmt"
@@ -43,20 +42,20 @@ func GetClosest(current *Agent, skip []int64) (Agent, bool) {
     rows, _:= DB.Query("SELECT * FROM submissions where user_id!=? and broken=0 and id not in (?)", current.UserId, com)
     defer rows.Close()
     var res Agent
-    diff := math.Inf(1)
-    hasRows := false
+    best_quality := -1.0 
+    curr_skill := trueskill.NewPlayer(current.Raiting, current.Sigma)
     for rows.Next() {
         var agent Agent
         var broken int
         rows.Scan(&agent.Id, &agent.UserId, &agent.Image, &agent.Raiting, &agent.Sigma, &broken)
-        ndiff := math.Abs(current.Raiting - agent.Raiting)
-        if ndiff<diff {
+        cand_skill := trueskill.NewPlayer(agent.Raiting, agent.Sigma)
+        quality := config.TsConfig().MatchQuality([]trueskill.Player{curr_skill, cand_skill})
+        if quality > best_quality {
             res = agent
-            ndiff = diff
-            hasRows = true
+            best_quality = quality
         }
     }
-    return res, hasRows
+    return res, best_quality > -1
 
 }
 
@@ -68,22 +67,22 @@ func reloadAgent(agent *Agent) error {
     return DB.QueryRow("select raiting, sigma from submissions where id=?", agent.Id).Scan(&agent.Raiting, &agent.Sigma)
 }
 
-//func updateAgent(ndata *Agent, pl *trueskill.Player) error {
-//    _, err := DB.Exec("update submissions set raiting=?, sigma=? where id=?", pl.Mu(), pl.Sigma(), ndata.Id)
-//    return err
-//}
-//
-//func RecordResult(winner *Agent, looser *Agent, draw bool) {
-//    mutex.Lock()
-//    defer mutex.Unlock()
-//    reloadAgent(winner)
-//    reloadAgent(looser)
-//    pl1 := trueskill.NewPlayer(winner.Raiting, winner.Sigma)
-//    pl2 := trueskill.NewPlayer(looser.Raiting, looser.Sigma)
-//    newSkills, _ := config.TsConfig().AdjustSkills([]trueskill.Player{pl1, pl2}, draw)
-//    updateAgent(winner, &newSkills[0])
-//    updateAgent(looser, &newSkills[1])
-//}
+func updateAgent(ndata *Agent, pl *trueskill.Player) error {
+    _, err := DB.Exec("update submissions set raiting=?, sigma=? where id=?", pl.Mu(), pl.Sigma(), ndata.Id)
+    return err
+}
+
+func RecordResult(winner *Agent, looser *Agent, draw bool) {
+    mutex.Lock()
+    defer mutex.Unlock()
+    reloadAgent(winner)
+    reloadAgent(looser)
+    pl1 := trueskill.NewPlayer(winner.Raiting, winner.Sigma)
+    pl2 := trueskill.NewPlayer(looser.Raiting, looser.Sigma)
+    newSkills, _ := config.TsConfig().AdjustSkills([]trueskill.Player{pl1, pl2}, draw)
+    updateAgent(winner, &newSkills[0])
+    updateAgent(looser, &newSkills[1])
+}
 
 func GetAgentsN() (int, error) {
     var count int

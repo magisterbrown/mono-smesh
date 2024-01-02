@@ -16,26 +16,15 @@ func ScheduleNGames(agent models.Agent, nGames int) {
             return 
         }
         played = append(played, competitor.Id)
-        winner, err := Match(&agent, &competitor)
-        if err != nil{
-            models.SetBroken(winner)
-            if winner.Id == agent.Id {
-                return 
-            }
-        } else {
-            //TODO: support draws
-            if winner == nil {
-                //models.RecordResult(&agent, winner, true)
-            }else if(winner.Id == agent.Id){
-                //models.RecordResult(&agent, winner, false)
-            } else {
-                //models.RecordResult(winner, &agent, false)
-            }
+        winner, looser := MatchShuffle(&agent, &competitor)
+        models.RecordResult(winner, looser, winner==nil)
+        extra_competitor, hasRows := models.GetClosest(&competitor, []int64{agent.Id})
+        if hasRows {
+            go func() {
+                winner, looser := MatchShuffle(&extra_competitor, &competitor)
+                models.RecordResult(winner, looser, winner==nil)
+            }()
         }
-        //comparable := make([]trueskill.Player, len(agents))
-        //for i, ag := range agents{
-        //    comparable[i] = trueskill.NewPlayer(int(ag.Id), ag.Raiting, ag.Sigma) 
-        //}
     }
 }
 

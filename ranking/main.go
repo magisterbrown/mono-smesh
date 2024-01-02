@@ -4,7 +4,7 @@ import (
     "fmt"
     "regexp"
     "io"
-    _ "math"
+    "math"
     "net/http"
     "io/ioutil"
     "database/sql"
@@ -96,12 +96,12 @@ func getLeaderboard(w http.ResponseWriter, req *http.Request) {
             }
 
             // TODO: Schedule games
-            //competitors, err := models.GetAgentsN()
-            //if err != nil{
-            //    panic(err)
-            //}
-            //matches := int(math.Ceil(2*math.Log2(float64(competitors))))
-            //go compete.ScheduleNGames(submission, matches)
+            competitors, err := models.GetAgentsN()
+            if err != nil{
+                panic(err)
+            }
+            matches := int(math.Ceil(2*math.Log2(float64(competitors))))
+            go compete.ScheduleNGames(submission, matches)
            
             w.WriteHeader(200);
             json.NewEncoder(w).Encode(submission) //TODO: handle serializaiton errors

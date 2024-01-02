@@ -15,6 +15,7 @@ require (
 	github.com/google/uuid v1.5.0 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/lib/pq v1.10.9 // indirect
+	github.com/mafredri/go-trueskill v0.0.0-20190101120706-fc89fbba5a88 // indirect
 	github.com/moby/moby v24.0.6+incompatible // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
 	github.com/moby/sys/sequential v0.5.0 // indirect

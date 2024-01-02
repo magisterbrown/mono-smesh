@@ -1,5 +1,5 @@
 package config
-//import "github.com/mafredri/go-trueskill"
+import "github.com/mafredri/go-trueskill"
 
 var GameTag string = "game:latest"
 var GameFolder string = "games/"
@@ -12,15 +12,15 @@ const (
 
 
 
-//func TsConfig() trueskill.Config {
-//    prob, _ := trueskill.DrawProbability(33)
-//    
-//    return trueskill.New(
-//        trueskill.Mu(DefMu),
-//        trueskill.Sigma(DefSig),
-//        trueskill.Beta(DefSig/2),
-//        trueskill.Tau(DefSig/100),
-//        prob)
-//}
+func TsConfig() trueskill.Config {
+    prob, _ := trueskill.DrawProbability(33)
+    
+    return trueskill.New(
+        trueskill.Mu(DefMu),
+        trueskill.Sigma(DefSig),
+        trueskill.Beta(DefSig/2),
+        trueskill.Tau(DefSig/100),
+        prob)
+}
 
 
