@@ -16,13 +16,13 @@ func ScheduleNGames(agent models.Agent, nGames int) {
             return 
         }
         played = append(played, competitor.Id)
-        winner, looser, draw := MatchShuffle(&agent, &competitor)
-        models.RecordResult(winner, looser, draw)
+        outcome := MatchShuffle(&agent, &competitor)
+        RecordResult(&outcome)
         extra_competitor, hasRows := models.GetClosest(&competitor, []int64{agent.Id})
         if hasRows {
             go func() {
-                winner, looser, draw := MatchShuffle(&extra_competitor, &competitor)
-                models.RecordResult(winner, looser, draw)
+                outcome := MatchShuffle(&extra_competitor, &competitor)
+                RecordResult(&outcome)
             }()
         }
     }

@@ -21,14 +21,17 @@ CREATE TABLE IF NOT EXISTS submissions (
 
 CREATE TABLE IF NOT EXISTS matches (
     id SERIAL PRIMARY KEY,
-    subm_1 INT NOT NULL,
-    subm_2 INT NOT NULL,
-    subm_1_change FLOAT NOT NULL,
-    subm_2_change FLOAT NOT NULL,
-    recording json,
-    FOREIGN KEY(subm_1) REFERENCES submissions(id),
-    FOREIGN KEY(subm_2) REFERENCES submissions(id)
+    recording json
+);
 
+CREATE TABLE IF NOT EXISTS seating (
+    id SERIAL PRIMARY KEY,
+    match_id INT NOT NULL,
+    submission_id INT NOT NULL,
+    change FLOAT NOT NULL,
+    spot VARCHAR(128) NOT NULL,
+    FOREIGN KEY(match_id) REFERENCES matches(id),
+    FOREIGN KEY(submission_id) REFERENCES submissions(id)
 );
 
 INSERT INTO players (user_name)

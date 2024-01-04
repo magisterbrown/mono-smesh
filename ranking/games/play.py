@@ -26,6 +26,7 @@ def request(data: dict, recv: int = 0) -> Optional[bytes]:
 env = rps_v2.env(max_cycles=3)
 env.reset(seed=42)
 acc_rewards = env.rewards.copy()
+history = list()
 for agent in env.agent_iter():
     observation, reward, termination, truncation, info = env.last()
     acc_rewards[agent]+=reward
@@ -35,7 +36,9 @@ for agent in env.agent_iter():
         # this is where you would insert your policy
         action = request({"type": "move", "agent": agent, "args": {"observation": observation.tolist()}}, 16)
     try:
-        env.step(int(action))
+        actt = int(action)
+        env.step(actt)
+        history.append({"agent": agent, "move": actt})
     except:
         # TODO: handle move with error
         env.agents.remove(agent)
@@ -46,4 +49,4 @@ env.close()
 winner = max(acc_rewards, key=acc_rewards.get)
 if all(value == 0 for value in acc_rewards.values()):
     winner = ""
-request({"type": "done", "agent": winner})
+request({"type": "done", "agent": winner, "history": json.dumps(history)})

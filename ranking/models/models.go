@@ -3,14 +3,12 @@ package models
 import (
     "database/sql"
     "ranking/config"
-    "github.com/mafredri/go-trueskill"
     "github.com/lib/pq"
-    "sync"
+    "github.com/mafredri/go-trueskill"
     "time"
 )
 
 var DB *sql.DB
-var mutex sync.Mutex
 
 type Agent struct {
     Id int64 
@@ -23,12 +21,6 @@ type Agent struct {
     CreatedAt time.Time
     
 }
-
-//type PlayedMatch struct {
-//    Winner *Agent
-//    Looser *Agent
-//    Draw bool
-//}
 
 func CreateAgentDB(data *Agent, owner Player) error {
     data.Raiting = config.DefMu
@@ -74,36 +66,34 @@ func SetBroken(agent *Agent) {
    }
 }
 
-func reloadAgent(agent *Agent) {
+func ReloadAgent(agent *Agent) {
     err := DB.QueryRow("select raiting, sigma from submissions where id=$1", agent.Id).Scan(&agent.Raiting, &agent.Sigma)
     if err != nil {
         panic(err)
     }
 }
 
-func updateAgent(ndata *Agent, pl *trueskill.Player) {
+func UpdateAgent(ndata *Agent, pl *trueskill.Player) {
     _, err := DB.Exec("update submissions set raiting=$1, sigma=$2 where id=$3", pl.Mu(), pl.Sigma(), ndata.Id)
     if err != nil {
         panic(err)
     }
 }
 
-func RecordResult(winner *Agent, looser *Agent, draw bool) {
-    mutex.Lock()
-    defer mutex.Unlock()
-    reloadAgent(winner)
-    reloadAgent(looser)
-    pl1 := trueskill.NewPlayer(winner.Raiting, winner.Sigma)
-    pl2 := trueskill.NewPlayer(looser.Raiting, looser.Sigma)
-    newSkills, _ := config.TsConfig().AdjustSkills([]trueskill.Player{pl1, pl2}, draw)
-
-    _, err := DB.Exec("INSERT INTO matches (subm_1, subm_2, subm_1_change, subm_2_change, recording) VALUES ($1, $2, $3, $4, $5)", winner.Id, looser.Id, newSkills[0].Mu() - winner.Raiting, newSkills[1].Mu() - winner.Raiting, "{}")
+func StoreMatch(history string) int {
+    var id int;
+    err := DB.QueryRow("INSERT INTO matches (recording) VALUES ($1) RETURNING id", history).Scan(&id)
     if err != nil {
         panic(err)
     }
-    updateAgent(winner, &newSkills[0])
-    updateAgent(looser, &newSkills[1])
+    return id
+}
 
+func StoreSeating(matchId int, agent *Agent, pl *trueskill.Player, spot string) {
+    _, err := DB.Exec("INSERT INTO seating (match_id, submission_id, change, spot) VALUES ($1, $2, $3, $4)", matchId, agent.Id,  pl.Mu() - agent.Raiting, spot)
+    if err != nil {
+        panic(err)
+    }
 }
 
 func GetAgentsN() (int, error) {
