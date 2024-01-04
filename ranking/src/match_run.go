@@ -27,7 +27,7 @@ type Request struct {
     Broken string
 }
 
-func MatchShuffle(player1 *models.Agent, player2 *models.Agent) (*models.Agent, *models.Agent) {
+func MatchShuffle(player1 *models.Agent, player2 *models.Agent) (*models.Agent, *models.Agent, bool) {
     rand.Seed(time.Now().UnixNano())
     if(rand.Intn(2) == 1){
         return Match(player1, player2)
@@ -36,7 +36,7 @@ func MatchShuffle(player1 *models.Agent, player2 *models.Agent) (*models.Agent, 
 }
 
 
-func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, *models.Agent) {
+func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, *models.Agent, bool) {
     sock_name := "/" + uuid.New().String() + ".sock";
     socket, err := net.Listen("unix", config.SockerVolumePath + sock_name)
     if err != nil {
@@ -128,12 +128,12 @@ func Match(player1 *models.Agent, player2 *models.Agent) (*models.Agent, *models
     }
 
     if req.Agent == "" {
-        return nil, nil
+        return player1, player2, true 
     }
 
     if agents[req.Agent] == player1 {
-        return player1, player2
+        return player1, player2, false
     }
 
-    return player2, player1
+    return player2, player1, false
 }

@@ -15,7 +15,20 @@ CREATE TABLE IF NOT EXISTS submissions (
     raiting FLOAT NOT NULL,
     sigma FLOAT NOT NULL,
     broken INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES players(id)
+);
+
+CREATE TABLE IF NOT EXISTS matches (
+    id SERIAL PRIMARY KEY,
+    subm_1 INT NOT NULL,
+    subm_2 INT NOT NULL,
+    subm_1_change FLOAT NOT NULL,
+    subm_2_change FLOAT NOT NULL,
+    recording json,
+    FOREIGN KEY(subm_1) REFERENCES submissions(id),
+    FOREIGN KEY(subm_2) REFERENCES submissions(id)
+
 );
 
 INSERT INTO players (user_name)
