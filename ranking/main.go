@@ -19,6 +19,44 @@ import (
     "context"
 )
 
+func getSubmissions(w http.ResponseWriter, req *http.Request) {
+    w.Header().Set("Content-Type", "application/json")
+    switch req.Method {
+        case "OPTIONS":
+            w.Header().Set("Allow", "OPTIONS, GET, HEAD")
+            w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+            w.WriteHeader(http.StatusOK)
+        case "GET", "HEAD":
+            userName, ok := req.URL.Query()["user_name"]
+            if !ok || len(userName) != 1 {
+            	http.Error(w, "Sepcify one ?user_name=<name>", http.StatusBadRequest)
+            	return
+            }
+            agents, err := models.GetUserAgents(userName[0])
+            if err != nil {
+                http.Error(w, "Try better user_name", http.StatusBadRequest)
+                return 
+            }
+            json.NewEncoder(w).Encode(agents)
+        default:
+            w.WriteHeader(404);
+    }
+
+}
+
+func getMatches(w http.ResponseWriter, req *http.Request) {
+    w.Header().Set("Content-Type", "application/json")
+    switch req.Method {
+        case "OPTIONS":
+            w.Header().Set("Allow", "OPTIONS, GET, HEAD")
+            w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+            w.WriteHeader(http.StatusOK)
+        case "GET", "HEAD":
+            w.WriteHeader(200);
+        default:
+            w.WriteHeader(404);
+    }
+}
 
 func getLeaderboard(w http.ResponseWriter, req *http.Request) {
     w.Header().Set("Content-Type", "application/json")
@@ -138,5 +176,7 @@ func main() {
 
     fmt.Println("Initialized all systems")
     http.HandleFunc("/api/leaderboard", getLeaderboard)
+    http.HandleFunc("/api/submissions", getSubmissions)
+    http.HandleFunc("/api/matches", getMatches)
     http.ListenAndServe(":5000", nil)
 }

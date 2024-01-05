@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS submissions (
     container_id VARCHAR(128) NOT NULL,
     raiting FLOAT NOT NULL,
     sigma FLOAT NOT NULL,
-    broken INT DEFAULT 0,
+    broken BOOL DEFAULT 'f',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES players(id)
 );

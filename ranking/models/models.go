@@ -30,10 +30,26 @@ func CreateAgentDB(data *Agent, owner Player) error {
     return err;
 }
 
+func GetUserAgents(user_name string) ([]Agent, error) {
+    //TODO: protect from injections
+    rows, err := DB.Query("SELECT s.id, s.user_id, s.file_name, s.container_id, s.raiting, s.sigma, s.broken, s.created_at FROM submissions s JOIN players p ON s.user_id=p.id WHERE p.user_name=$1", user_name)
+    if err != nil {
+       return nil, err
+    }
+    var agents []Agent
+    for rows.Next() {
+        var agn Agent
+        rows.Scan(&agn.Id, &agn.UserId, &agn.FileName, &agn.Image, &agn.Raiting, &agn.Sigma, &agn.Broken, agn.CreatedAt)
+        agents = append(agents, agn)
+    }
+    if err = rows.Err(); err != nil {
+        return agents, err
+    }
+    return agents, nil
+}
+
 
 func GetClosest(current *Agent, skip []int64) (Agent, bool) {
-    //skip = append(skip, -1)
-    //com := strings.Trim(strings.Replace(fmt.Sprint(skip), " ", ",", -1), "[]")
     rows, err:= DB.Query("SELECT * FROM submissions where user_id!=$1 and broken=0 and id!=ALL($2)", current.UserId, pq.Array(skip))
     if err != nil {
         panic(err)
@@ -114,6 +130,12 @@ func GetOrCreatePlayer(user_name string) (Player, error) {
     var user Player
     err := DB.QueryRow("insert into players (user_name) values ('"+user_name+"')  on conflict do nothing; select * from players where user_name='"+user_name+"'").Scan(&user.Id, &user.Name);
     return user, err
+}
+
+func GetPlayerId(user_name string) (int, error) {
+    var id int;
+    err := DB.QueryRow("SELECT id FROM players WHERE user_name=$1", user_name).Scan(&id);
+    return id, err
 }
 
 func GetLeaderboard() []Player {
