@@ -22,12 +22,54 @@ type Agent struct {
     
 }
 
+type SpotPlayer struct {
+    Id int64
+    Change float64
+    Spot string
+    UserName string
+}
+
+type Submission struct {
+    Id int64
+    Seating []SpotPlayer
+}
+
 func CreateAgentDB(data *Agent, owner Player) error {
     data.Raiting = config.DefMu
     data.Sigma = config.DefSig
     err := DB.QueryRow("INSERT INTO submissions (user_id, file_name,  container_id, raiting, sigma) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at", owner.Id, data.FileName, data.Image, data.Raiting, data.Sigma).Scan(&data.Id, &data.CreatedAt);
     data.UserId = owner.Id
     return err;
+}
+
+func GetSubmissions(id int64) ([]Submission, error) {
+    rows, err := DB.Query("select m.id from matches m join seating s on m.id=s.match_id join submissions su on s.submission_id=su.id where su.id=$1", id)
+    if err != nil {
+        return nil, err
+    }
+    var subms []Submission
+    for rows.Next() {
+        var subm Submission
+        subm.Seating = []SpotPlayer{}
+        rows.Scan(&subm.Id)
+        spotRows, err := DB.Query("select se.id, se.change, se.spot, p.user_name from seating se join submissions su on se.submission_id=su.id join players p on su.user_id=p.id where match_id=$1", subm.Id)
+        if err != nil {
+            return subms, err 
+        }
+        for spotRows.Next() {
+            var spot SpotPlayer
+            spotRows.Scan(&spot.Id, &spot.Change, &spot.Spot, &spot.UserName)
+            subm.Seating = append(subm.Seating, spot)
+        }
+        subms = append(subms, subm);
+    }
+    return subms, nil
+}
+
+func GetRecording(id int64) (string, error) {
+    var recording string
+    err := DB.QueryRow("select recording from matches where id=$1", id).Scan(&recording);
+    return recording, err
 }
 
 func GetUserAgents(user_name string) ([]Agent, error) {
@@ -47,7 +89,6 @@ func GetUserAgents(user_name string) ([]Agent, error) {
     }
     return agents, nil
 }
-
 
 func GetClosest(current *Agent, skip []int64) (Agent, bool) {
     rows, err:= DB.Query("SELECT * FROM submissions where user_id!=$1 and broken=0 and id!=ALL($2)", current.UserId, pq.Array(skip))

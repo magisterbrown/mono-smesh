@@ -5,6 +5,7 @@ import (
     "regexp"
     "io"
     "math"
+    "strconv"
     "net/http"
     "io/ioutil"
     "database/sql"
@@ -18,6 +19,35 @@ import (
     "github.com/dustinkirkland/golang-petname"
     "context"
 )
+
+func getRecording(w http.ResponseWriter, req *http.Request) {
+    w.Header().Set("Content-Type", "text/plain")
+    switch req.Method {
+        case "OPTIONS":
+            w.Header().Set("Allow", "OPTIONS, GET, HEAD")
+            w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+            w.WriteHeader(http.StatusOK)
+        case "GET", "HEAD":
+            idx, ok := req.URL.Query()["id"]
+            if !ok || len(idx) != 1 {
+            	http.Error(w, "Sepcify one ?id=<submission_id>", http.StatusBadRequest)
+                return 
+            }
+            idntx, err := strconv.Atoi(idx[0]);
+            if err != nil {
+            	http.Error(w, "Sepcify one ?id=<submission_id>", http.StatusBadRequest)
+                return 
+            }
+            recording, err := models.GetRecording(int64(idntx))
+            if err != nil {
+            	http.Error(w, "Sepcify valid ?id=<submission_id>", http.StatusBadRequest)
+                return 
+            }
+            w.Write([]byte(recording))
+        default:
+            w.WriteHeader(404);
+    }
+}
 
 func getSubmissions(w http.ResponseWriter, req *http.Request) {
     w.Header().Set("Content-Type", "application/json")
@@ -52,7 +82,22 @@ func getMatches(w http.ResponseWriter, req *http.Request) {
             w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
             w.WriteHeader(http.StatusOK)
         case "GET", "HEAD":
-            w.WriteHeader(200);
+            idx, ok := req.URL.Query()["id"]
+            if !ok || len(idx) != 1 {
+            	http.Error(w, "Sepcify one ?id=<submission_id>", http.StatusBadRequest)
+                return 
+            }
+            idntx, err := strconv.Atoi(idx[0]);
+            if err != nil {
+            	http.Error(w, "Sepcify one ?id=<submission_id>", http.StatusBadRequest)
+                return 
+            }
+            submissions, err := models.GetSubmissions(int64(idntx))
+            if err != nil {
+            	http.Error(w, "Sepcify valid ?id=<submission_id>", http.StatusBadRequest)
+                return 
+            }
+            json.NewEncoder(w).Encode(submissions)
         default:
             w.WriteHeader(404);
     }
@@ -178,5 +223,6 @@ func main() {
     http.HandleFunc("/api/leaderboard", getLeaderboard)
     http.HandleFunc("/api/submissions", getSubmissions)
     http.HandleFunc("/api/matches", getMatches)
+    http.HandleFunc("/api/matches/recording", getRecording)
     http.ListenAndServe(":5000", nil)
 }
