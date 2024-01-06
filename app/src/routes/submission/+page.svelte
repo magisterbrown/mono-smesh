@@ -1,5 +1,6 @@
 <script>
 import Header from '../Header.svelte';
+import Matches from '../Matches.svelte';
 import Fa from 'svelte-fa/src/fa.svelte'
 import { faCheck, faXmark, faBook} from '@fortawesome/free-solid-svg-icons'
 import { authenticatedFetch } from '$lib/request.js';
@@ -22,6 +23,7 @@ function uploadAgent(e) {
     authenticatedFetch("/api/leaderboard", "POST", {}, new FormData(e.target));
 }
 </script>
+<Matches> </Matches>
 <Header sel="subm"></Header>
 <div class="content">
     <div class="title">Submissions</div>
