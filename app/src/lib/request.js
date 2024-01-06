@@ -6,7 +6,6 @@ export async function authenticatedFetch(endpoint, options = {}) {
     if(!options.headers) options.headers = {}
     options.headers['Authorization'] = token
     let resp = await fetch(backend_url+endpoint, options);
-    console.log(resp);
     //if (resp.status === 404) {
     //   window.location.href='/signup'; 
     //}

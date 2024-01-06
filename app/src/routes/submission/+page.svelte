@@ -7,8 +7,14 @@ import { onMount } from "svelte";
 let agents = [];
 
 onMount(() => {
-    authenticatedFetch("/api/submissions?user_name=goof", {method: "GET"}).then(resp => {
-        resp.json().then(body => {agents = body});
+    authenticatedFetch("/api/whoami", {method: "GET"}).then(resp => {
+        resp.text().then(name => {
+            authenticatedFetch("/api/submissions?user_name="+name, {method: "GET"}).then(resp => {
+                     resp.json().then(body => {agents = body
+                    console.log(agents);
+                     });
+            });
+        });
     });
 });
 

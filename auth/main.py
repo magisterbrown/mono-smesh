@@ -33,7 +33,7 @@ class Credentials(BaseModel):
 
 subdomain = "/auth"
 
-engine = create_engine(db_url)
+engine = create_engine(db_url, pool_size=20)
 Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base.metadata.create_all(engine)

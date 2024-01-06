@@ -6,10 +6,14 @@ import { authenticatedFetch } from '$lib/request.js'
 import { onMount } from "svelte";
 
 let teams = [];
+let my_name = ""
 
 onMount( () => {
+    authenticatedFetch("/api/whoami", {method: "GET"}).then(resp => {
+        resp.text().then(name => {my_name = name})
+    });
     authenticatedFetch("/api/leaderboard", {method: "GET"}).then(resp => {
-        resp.json().then(body => {teams = body});
+        resp.json().then(body => {teams = body})
     });
 });
 
@@ -26,7 +30,7 @@ onMount( () => {
         <div >
             {#if teams.length}
                 {#each teams as team, i}
-                    <div class="listed leader">
+                    <div class="listed leader" style:font-weight={team.Name==my_name ? 'bold' : 'normal'}>
                         <span class="rank">{i+1}</span>
                         <span class="team">{team.Name}</span>
                         <span class="score">{team.Raiting.toFixed(0)}</span>

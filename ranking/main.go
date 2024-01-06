@@ -19,7 +19,19 @@ import (
     "github.com/dustinkirkland/golang-petname"
     "context"
 )
-
+func getMyName(w http.ResponseWriter, req *http.Request) {
+    w.Header().Set("Content-Type", "text/plain")
+    switch req.Method {
+        case "OPTIONS":
+            w.Header().Set("Allow", "OPTIONS, GET, HEAD")
+            w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+            w.WriteHeader(http.StatusOK)
+        case "GET", "HEAD":
+            w.Write([]byte(req.Header.Get("User-Name")))
+        default:
+            w.WriteHeader(404);
+    }
+}
 func getRecording(w http.ResponseWriter, req *http.Request) {
     w.Header().Set("Content-Type", "text/plain")
     switch req.Method {
@@ -220,6 +232,7 @@ func main() {
     }
 
     fmt.Println("Initialized all systems")
+    http.HandleFunc("/api/whoami", getMyName)
     http.HandleFunc("/api/leaderboard", getLeaderboard)
     http.HandleFunc("/api/submissions", getSubmissions)
     http.HandleFunc("/api/matches", getMatches)
