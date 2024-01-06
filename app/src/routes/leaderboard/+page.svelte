@@ -8,7 +8,7 @@ import { onMount } from "svelte";
 let teams = [];
 
 onMount( () => {
-    authenticatedFetch("/api/leaderboard").then(resp => {
+    authenticatedFetch("/api/leaderboard", {method: "GET"}).then(resp => {
         resp.json().then(body => {teams = body});
     });
 });
@@ -29,7 +29,7 @@ onMount( () => {
                     <div class="listed leader">
                         <span class="rank">{i+1}</span>
                         <span class="team">{team.Name}</span>
-                        <span class="score">{team.Raiting}</span>
+                        <span class="score">{team.Raiting.toFixed(0)}</span>
                         <span class="agents">{team.Agents}  <Fa icon={faBook} style="cursor:pointer; font-size: 1.0rem"/></span>
                     </div>
                 {/each}

@@ -180,14 +180,12 @@ func GetPlayerId(user_name string) (int, error) {
 }
 
 func GetLeaderboard() []Player {
-    rows, _:= DB.Query("SELECT * FROM players")
+    rows, _:= DB.Query("select p.id, p.user_name, MAX(s.raiting), COUNT(s.id) from players p join submissions s on p.id=s.user_id group by p.id order by max DESC")
     defer rows.Close()
     var res []Player
     for rows.Next() {
         var player Player
-        rows.Scan(&player.Id, &player.Name);
-        player.Raiting = 173
-        player.Agents = 7
+        rows.Scan(&player.Id, &player.Name, &player.Raiting, &player.Agents);
         res = append(res, player);
     }
     return res

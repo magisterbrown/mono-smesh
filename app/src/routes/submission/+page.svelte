@@ -3,12 +3,14 @@ import Header from '../Header.svelte';
 import Fa from 'svelte-fa/src/fa.svelte'
 import { faCheck, faXmark, faBook} from '@fortawesome/free-solid-svg-icons'
 import { authenticatedFetch } from '$lib/request.js';
-let agents = [
-    {id: 0, name: "subm.tar", sucess: true, score: 500},
-    {id: 1, name: "agent.tar", sucess: false, score: 200},
-    {id: 2, name: "last.tar", sucess: true, score: 600}
+import { onMount } from "svelte";
+let agents = [];
 
-];
+onMount(() => {
+    authenticatedFetch("/api/submissions?user_name=goof", {method: "GET"}).then(resp => {
+        resp.json().then(body => {agents = body});
+    });
+});
 
 function uploadAgent(e) {
     authenticatedFetch("/api/leaderboard", "POST", {}, new FormData(e.target));
@@ -37,16 +39,16 @@ function uploadAgent(e) {
             {#each agents as agent}
             <div class="agent listed">
                 <span class="sucess">
-                    {#if agent.sucess}
+                    {#if !agent.Broken}
                     <Fa icon={faCheck} color="#1e8e3e"/>
                     {:else}
                     <Fa icon={faXmark} color="#d93025"/>
                     {/if}
                 </span>
-                <span class="file">{agent.name}</span>
-                <span class="score">{agent.sucess ? agent.score : ""}</span>
+                <span class="file">{agent.FileName}</span>
+                <span class="score">{!agent.Broken ? agent.Raiting.toFixed(0) : ""}</span>
                 <span class="watch">
-                    {#if agent.sucess}
+                    {#if !agent.Broken}
                         <Fa icon={faBook} style="cursor:pointer; font-size: 1.3rem"/>
                     {/if}
                 </span>
