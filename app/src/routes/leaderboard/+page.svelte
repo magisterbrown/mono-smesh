@@ -1,5 +1,6 @@
 <script>
 import Header from '../Header.svelte';
+import Matches from '../Matches.svelte';
 import Fa from 'svelte-fa/src/fa.svelte'
 import { faBook} from '@fortawesome/free-solid-svg-icons'
 import { authenticatedFetch } from '$lib/request.js'
@@ -7,6 +8,7 @@ import { onMount } from "svelte";
 
 let teams = [];
 let my_name = ""
+let owner;
 
 onMount( () => {
     authenticatedFetch("/api/whoami", {method: "GET"}).then(resp => {
@@ -16,8 +18,10 @@ onMount( () => {
         resp.json().then(body => {teams = body})
     });
 });
-
+$: console.log(teams);
+let showAgent;
 </script>
+<Matches bind:showAgent bind:owner> </Matches>
 <Header sel="leader"></Header>
 <div class="content">
     <div class="table">
@@ -34,7 +38,7 @@ onMount( () => {
                         <span class="rank">{i+1}</span>
                         <span class="team">{team.Name}</span>
                         <span class="score">{team.Raiting.toFixed(0)}</span>
-                        <span class="agents">{team.Agents}  <Fa icon={faBook} style="cursor:pointer; font-size: 1.0rem"/></span>
+                        <span class="agents" on:click|stopPropagation={()=>{showAgent=team.BestAgentId; owner=team.Name}}>{team.Agents}  <Fa icon={faBook} style="cursor:pointer; font-size: 1.0rem"/></span>
                     </div>
                 {/each}
             {/if}

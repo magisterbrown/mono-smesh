@@ -173,8 +173,13 @@ func RecordResult(out *Outcome) {
     pl2 := trueskill.NewPlayer(out.Looser.Raiting, out.Looser.Sigma)
     newSkills, _ := config.TsConfig().AdjustSkills([]trueskill.Player{pl1, pl2}, out.Draw)
     matchId := models.StoreMatch(out.Recording)
-    models.StoreSeating(matchId, out.Winner, &newSkills[0], out.Seating[out.Winner]); 
-    models.StoreSeating(matchId, out.Looser, &newSkills[1], out.Seating[out.Looser]); 
+    if(out.Draw) {
+        models.StoreSeating(matchId, out.Winner, &newSkills[0], out.Seating[out.Winner], "Draw"); 
+        models.StoreSeating(matchId, out.Looser, &newSkills[1], out.Seating[out.Looser], "Draw"); 
+    } else{
+        models.StoreSeating(matchId, out.Winner, &newSkills[0], out.Seating[out.Winner], "Win"); 
+        models.StoreSeating(matchId, out.Looser, &newSkills[1], out.Seating[out.Looser], "Loose"); 
+    }
     models.UpdateAgent(out.Winner, &newSkills[0])
     models.UpdateAgent(out.Looser, &newSkills[1])
 

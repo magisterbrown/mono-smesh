@@ -26,6 +26,7 @@ type SpotPlayer struct {
     Id int64
     Change float64
     Spot string
+    Status string
     UserName string
 }
 
@@ -52,13 +53,13 @@ func GetSubmissions(id int64) ([]Submission, error) {
         var subm Submission
         subm.Seating = []SpotPlayer{}
         rows.Scan(&subm.Id)
-        spotRows, err := DB.Query("select se.id, se.change, se.spot, p.user_name from seating se join submissions su on se.submission_id=su.id join players p on su.user_id=p.id where match_id=$1", subm.Id)
+        spotRows, err := DB.Query("select se.id, se.change, se.spot, se.status, p.user_name from seating se join submissions su on se.submission_id=su.id join players p on su.user_id=p.id where match_id=$1", subm.Id)
         if err != nil {
             return subms, err 
         }
         for spotRows.Next() {
             var spot SpotPlayer
-            spotRows.Scan(&spot.Id, &spot.Change, &spot.Spot, &spot.UserName)
+            spotRows.Scan(&spot.Id, &spot.Change, &spot.Spot, &spot.Status, &spot.UserName)
             subm.Seating = append(subm.Seating, spot)
         }
         subms = append(subms, subm);
@@ -74,14 +75,14 @@ func GetRecording(id int64) (string, error) {
 
 func GetUserAgents(user_name string) ([]Agent, error) {
     //TODO: protect from injections
-    rows, err := DB.Query("SELECT s.id, s.user_id, s.file_name, s.container_id, s.raiting, s.sigma, s.broken, s.created_at FROM submissions s JOIN players p ON s.user_id=p.id WHERE p.user_name=$1", user_name)
+    rows, err := DB.Query("SELECT s.id, s.user_id, s.file_name, s.container_id, s.raiting, s.sigma, s.broken, s.created_at FROM submissions s JOIN players p ON s.user_id=p.id WHERE p.user_name=$1 order by s.created_at DESC", user_name)
     if err != nil {
        return nil, err
     }
     var agents []Agent
     for rows.Next() {
         var agn Agent
-        rows.Scan(&agn.Id, &agn.UserId, &agn.FileName, &agn.Image, &agn.Raiting, &agn.Sigma, &agn.Broken, agn.CreatedAt)
+        rows.Scan(&agn.Id, &agn.UserId, &agn.FileName, &agn.Image, &agn.Raiting, &agn.Sigma, &agn.Broken, &agn.CreatedAt)
         agents = append(agents, agn)
     }
     if err = rows.Err(); err != nil {
@@ -91,7 +92,7 @@ func GetUserAgents(user_name string) ([]Agent, error) {
 }
 
 func GetClosest(current *Agent, skip []int64) (Agent, bool) {
-    rows, err:= DB.Query("SELECT * FROM submissions where user_id!=$1 and broken=0 and id!=ALL($2)", current.UserId, pq.Array(skip))
+    rows, err:= DB.Query("SELECT * FROM submissions where user_id!=$1 and broken='f' and id!=ALL($2)", current.UserId, pq.Array(skip))
     if err != nil {
         panic(err)
     }
@@ -117,7 +118,7 @@ func GetClosest(current *Agent, skip []int64) (Agent, bool) {
 }
 
 func SetBroken(agent *Agent) {
-    _, err := DB.Exec("update submissions set broken=1 where id=$1", agent.Id)
+    _, err := DB.Exec("update submissions set broken='t' where id=$1", agent.Id)
    if err != nil {
         panic(err)
    }
@@ -146,8 +147,8 @@ func StoreMatch(history string) int {
     return id
 }
 
-func StoreSeating(matchId int, agent *Agent, pl *trueskill.Player, spot string) {
-    _, err := DB.Exec("INSERT INTO seating (match_id, submission_id, change, spot) VALUES ($1, $2, $3, $4)", matchId, agent.Id,  pl.Mu() - agent.Raiting, spot)
+func StoreSeating(matchId int, agent *Agent, pl *trueskill.Player, spot string, status string) {
+    _, err := DB.Exec("INSERT INTO seating (match_id, submission_id, change, spot, status) VALUES ($1, $2, $3, $4, $5)", matchId, agent.Id,  pl.Mu() - agent.Raiting, spot, status)
     if err != nil {
         panic(err)
     }
@@ -164,6 +165,7 @@ type Player struct {
     Name string
     Raiting float64
     Agents int
+    BestAgentId int
 }
 
 func GetOrCreatePlayer(user_name string) (Player, error) {
@@ -180,12 +182,12 @@ func GetPlayerId(user_name string) (int, error) {
 }
 
 func GetLeaderboard() []Player {
-    rows, _:= DB.Query("select p.id, p.user_name, MAX(s.raiting), COUNT(s.id) from players p join submissions s on p.id=s.user_id group by p.id order by max DESC")
+    rows, _:= DB.Query("with counted as (select p.id, p.user_name, MAX(s.raiting), COUNT(s.id) from players p join submissions s on p.id=s.user_id group by p.id) select c.*, s.id max_sub_id from counted c join submissions s on s.user_id=c.id and s.raiting=c.max order by max DESC")
     defer rows.Close()
     var res []Player
     for rows.Next() {
         var player Player
-        rows.Scan(&player.Id, &player.Name, &player.Raiting, &player.Agents);
+        rows.Scan(&player.Id, &player.Name, &player.Raiting, &player.Agents, &player.BestAgentId);
         res = append(res, player);
     }
     return res

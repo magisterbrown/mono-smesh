@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS submissions (
     raiting FLOAT NOT NULL,
     sigma FLOAT NOT NULL,
     broken BOOL DEFAULT 'f',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT  (now() at time zone 'utc'),
     FOREIGN KEY(user_id) REFERENCES players(id)
 );
 
@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS seating (
     submission_id INT NOT NULL,
     change FLOAT NOT NULL,
     spot VARCHAR(128) NOT NULL,
+    status VARCHAR(128),
     FOREIGN KEY(match_id) REFERENCES matches(id),
     FOREIGN KEY(submission_id) REFERENCES submissions(id)
 );
