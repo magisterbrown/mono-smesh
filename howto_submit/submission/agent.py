@@ -1,10 +1,14 @@
 import random
+import argparse
+from fanorona_aec.env.fanorona_move import FanoronaMove
+from fanorona_aec.env.fanorona_state import FanoronaState
 
-def agent(state: dict) -> dict:
-    res = random.choice([0,1,2])
-    #if state["observation"] == 1:
-    #    raise ValueError
+parser.add_argument("observation")
+args = parser.parse_args()
+
+def agent(state):
+    res = random.choice(state.legal_moves)
     return res
 
 if __name__=='__main__':
-    print(agent({}))
+    print(agent(FanoronaState.set_from_board_str(args.observation)))
