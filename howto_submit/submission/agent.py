@@ -3,7 +3,8 @@ import argparse
 from fanorona_aec.env.fanorona_move import FanoronaMove
 from fanorona_aec.env.fanorona_state import FanoronaState
 
-parser.add_argument("observation")
+parser = argparse.ArgumentParser()
+parser.add_argument("--observation")
 args = parser.parse_args()
 
 def agent(state):
@@ -11,4 +12,6 @@ def agent(state):
     return res
 
 if __name__=='__main__':
-    print(agent(FanoronaState.set_from_board_str(args.observation)))
+    board = args.observation
+    state = FanoronaState()
+    print(agent(state.set_from_board_str(board)))

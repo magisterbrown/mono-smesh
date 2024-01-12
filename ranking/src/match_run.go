@@ -79,7 +79,7 @@ func Match(player1 *models.Agent, player2 *models.Agent) Outcome {
         if err != nil {
             panic(err)
         }
-        buf := make([]byte, 4096)
+        buf := make([]byte, 32768)
         n, err := conn.Read(buf)
         req = Request{}
         if err = json.Unmarshal(buf[:n], &req); err != nil {
@@ -90,15 +90,16 @@ func Match(player1 *models.Agent, player2 *models.Agent) Outcome {
         }
         go func(req Request, conn net.Conn) {
             defer conn.Close()
-            var command string 
+            var command strslice.StrSlice
             for key, value := range req.Args {
-                command += fmt.Sprintf(" --%s %v", key, value)
+                command = append(command, fmt.Sprintf("--%s", key))
+                command = append(command, fmt.Sprintf("%v", value))
             }
             agent := agents[req.Agent]
 
             //Running agent
             err = func() error {
-                conf := container.Config{Image: agent.Image, Tty: true,  Cmd:  strslice.StrSlice{command}}
+                conf := container.Config{Image: agent.Image, Tty: true, AttachStdin: true, OpenStdin: true, StdinOnce:true,  Cmd:  command}
                 cont, err := Dock_cli.ContainerCreate(context.Background(), &conf, nil, nil, nil, "")
                 if(err != nil) {
                     return err

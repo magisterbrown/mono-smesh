@@ -26,8 +26,7 @@ def request(data: dict, recv: int = 0) -> Optional[bytes]:
 def agn(nm):
     if nm is None:
         return ""
-    return f"player_{nm}"
-
+    return f"player_{int(nm)}"
 
 # Game simulation
 env = FanoronaState()
@@ -36,21 +35,20 @@ history = list()
 
 while not env.done:
     cands = env.legal_moves
-    print(cands)
     board_state = str(env)
-    history.append({"agent": env.turn_to_play, "state": board_state})
+    history.append({"agent": agn(env.turn_to_play), "state": board_state})
     if len(cands)==1:
         env.push(FanoronaMove.from_action(cands[0]))
     else:
-        action = request({"type": "move", "agent": env.turn_to_play, "args": {"observation": board_state}}, 16)
+        action = request({"type": "move", "agent": agn(env.turn_to_play), "args": {"observation": board_state}}, 16)
         try:
             move = FanoronaMove.from_action(action)
             assert move.to_action() in env.legal_moves, "Illegal move"
         except:
             #TODO chack other
-            request({"type": "done", "agent": env.turn_to_play.other(), "broken": env.turn_to_play})
+            request({"type": "done", "agent": agn(env.turn_to_play.other()), "broken": agn(env.turn_to_play)})
             raise AssertionError("TODO: handle illegal move")
 
         env.push(move)
 
-request({"type": "done", "agent": env.winner, "history": json.dumps(history)})
+request({"type": "done", "agent": agn(env.winner), "history": json.dumps(history)})
