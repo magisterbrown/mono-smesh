@@ -1,2 +1,3 @@
 pettingzoo
+git+https://github.com/AbhijeetKrishnan/fanorona-aec
 pygame

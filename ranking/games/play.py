@@ -3,7 +3,9 @@ import socket
 import json
 from typing import Optional
 
-from pettingzoo.classic import rps_v2
+import numpy as np
+from fanorona_aec.env.fanorona_move import FanoronaMove
+from fanorona_aec.env.fanorona_state import FanoronaState
 
 # To test:
 # nc -lkU ./test.sock
@@ -21,32 +23,34 @@ def request(data: dict, recv: int = 0) -> Optional[bytes]:
         if recv:
             return client.recv(recv)
 
+def agn(nm):
+    if nm is None:
+        return ""
+    return f"player_{nm}"
+
 
 # Game simulation
-env = rps_v2.env(max_cycles=3)
-env.reset(seed=42)
-acc_rewards = env.rewards.copy()
+env = FanoronaState()
+env.reset()
 history = list()
-for agent in env.agent_iter():
-    observation, reward, termination, truncation, info = env.last()
-    acc_rewards[agent]+=reward
-    if termination or truncation:
-        break
-    else:
-        # this is where you would insert your policy
-        action = request({"type": "move", "agent": agent, "args": {"observation": observation.tolist()}}, 16)
-    try:
-        actt = int(action)
-        env.step(actt)
-        history.append({"agent": agent, "move": actt})
-    except:
-        # TODO: handle move with error
-        env.agents.remove(agent)
-        request({"type": "done", "agent": env.agents[0], "broken": agent})
-        raise AssertionError("TODO: handle illegal move")
-env.close()
 
-winner = max(acc_rewards, key=acc_rewards.get)
-if all(value == 0 for value in acc_rewards.values()):
-    winner = ""
-request({"type": "done", "agent": winner, "history": json.dumps(history)})
+while not env.done:
+    cands = env.legal_moves
+    print(cands)
+    board_state = str(env)
+    history.append({"agent": env.turn_to_play, "state": board_state})
+    if len(cands)==1:
+        env.push(FanoronaMove.from_action(cands[0]))
+    else:
+        action = request({"type": "move", "agent": env.turn_to_play, "args": {"observation": board_state}}, 16)
+        try:
+            move = FanoronaMove.from_action(action)
+            assert move.to_action() in env.legal_moves, "Illegal move"
+        except:
+            #TODO chack other
+            request({"type": "done", "agent": env.turn_to_play.other(), "broken": env.turn_to_play})
+            raise AssertionError("TODO: handle illegal move")
+
+        env.push(move)
+
+request({"type": "done", "agent": env.winner, "history": json.dumps(history)})
