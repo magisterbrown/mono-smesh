@@ -1,0 +1,43 @@
+<html>
+    <body>
+        <video id="videoElement" width="640" height="480" controls>
+        </video>
+            <iframe></iframe>
+    </body>
+<script src="http://localhost:8003/game.js"></script>
+<script>
+       //mediaStream.addTrack(new VideoTrack());
+    //ldocument.getElementById("videoElement").src="http://localhost:8003/example.mp4";
+    const videoUrl = 'http://localhost:8003/example.mp4';
+    fetch(videoUrl).then(resp => {
+        resp.arrayBuffer().then(buff => {
+            console.log(buff);
+            const blob = new Blob([buff], { type: 'video/mp4' });
+            const src = URL.createObjectURL(blob);
+            document.getElementById("videoElement").src=src;
+        })
+
+        //    resp.blob().then(blob => {
+        //   console.log(blob) 
+        //   console.log(src) 
+        //})
+    });
+    Module.onRuntimeInitialized = () => {
+        var res = Module.ccall('RenderPlay', 'i8*',['number'], [3]);
+        var blob = new Blob([Module.HEAPU8.subarray(res,res+5)], {type: 'text/plain'});
+        const src = URL.createObjectURL(blob);
+        var iframe = document.querySelector("iframe");
+        iframe.src = src;
+    }
+    
+    
+//    const mediaSource = new MediaSource();
+//            let buffer = mediaSource.addSourceBuffer("video/mp4");
+//            const src = URL.createObjectURL(mediaSource);
+//            document.getElementById("videoElement").src=src;
+//
+
+    
+</script>
+
+</html>
