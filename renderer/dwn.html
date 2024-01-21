@@ -1,5 +1,8 @@
 <html>
     <body>
+        <video width="320" height="240" controls>
+            <source src="http://localhost:8002/videold.mp4" type="video/mp4">
+        </video>
         <video id="videoElement" width="640" height="480" controls>
         </video>
             <iframe></iframe>
@@ -8,7 +11,7 @@
 <script>
        //mediaStream.addTrack(new VideoTrack());
     //ldocument.getElementById("videoElement").src="http://localhost:8003/example.mp4";
-    const videoUrl = 'http://localhost:8003/example.mp4';
+    const videoUrl = 'http://localhost:8002/videold.mp4';
     fetch(videoUrl).then(resp => {
         resp.arrayBuffer().then(buff => {
             console.log(buff);
