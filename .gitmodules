@@ -1,3 +1,6 @@
 [submodule "renderer/raylib"]
 	path = renderer/raylib
 	url = git@github.com:raysan5/raylib.git
+[submodule "renderer/FFmpeg-WASI"]
+	path = renderer/FFmpeg-WASI
+	url = git@github.com:SebastiaanYN/FFmpeg-WASI.git
